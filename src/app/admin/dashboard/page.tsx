@@ -614,6 +614,7 @@ function ContactForm() {
   const [githubUrl, setGithubUrl] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [twitterUrl, setTwitterUrl] = useState('');
+  const [resumeUrl, setResumeUrl] = useState('');
 
   useEffect(() => {
     if (profileData) {
@@ -621,6 +622,7 @@ function ContactForm() {
       setGithubUrl(profileData.githubUrl || '');
       setLinkedinUrl(profileData.linkedinUrl || '');
       setTwitterUrl(profileData.twitterUrl || '');
+      setResumeUrl(profileData.resumeUrl || '');
     }
   }, [profileData]);
 
@@ -638,6 +640,7 @@ function ContactForm() {
       githubUrl,
       linkedinUrl,
       twitterUrl,
+      resumeUrl,
     };
     setDocumentNonBlocking(profileRef, updatedData, { merge: true });
     toast({
@@ -660,6 +663,10 @@ function ContactForm() {
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="resumeUrl">CV/Resume URL</Label>
+          <Input id="resumeUrl" value={resumeUrl} onChange={(e) => setResumeUrl(e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="githubUrl">GitHub URL</Label>

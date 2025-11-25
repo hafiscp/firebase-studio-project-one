@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Github, Linkedin, Twitter, Mail, type LucideIcon, Loader2 } from 'lucide-react';
+import { Github, Linkedin, Twitter, Mail, type LucideIcon, Loader2, Briefcase } from 'lucide-react';
 import { useDoc, useFirebase, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Profile } from '@/lib/entities';
@@ -49,6 +49,15 @@ export function ContactCard({ className }: ContactCardProps) {
             <Mail className="mr-2 h-4 w-4" /> {profile.email}
           </Link>
         </Button>
+        
+        {profile.resumeUrl && (
+            <Button asChild variant="secondary" className="w-full max-w-xs">
+                <Link href={profile.resumeUrl} target="_blank" rel="noopener noreferrer">
+                    <Briefcase className="mr-2 h-4 w-4" /> Hire Me
+                </Link>
+            </Button>
+        )}
+
         <div className="flex gap-4 pt-2">
           {socialIcons.map(({key, icon: Icon}) => {
             const url = profile[key] as string | undefined;

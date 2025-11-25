@@ -9,6 +9,7 @@ export type Profile = {
     githubUrl?: string;
     linkedinUrl?: string;
     twitterUrl?: string;
+    resumeUrl?: string;
 };
 
 export type KeyMetric = {

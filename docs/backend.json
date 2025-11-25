@@ -46,6 +46,11 @@
           "type": "string",
           "description": "URL to the user's Twitter profile.",
           "format": "uri"
+        },
+        "resumeUrl": {
+          "type": "string",
+          "description": "URL to the user's CV/Resume.",
+          "format": "uri"
         }
       },
       "required": [
