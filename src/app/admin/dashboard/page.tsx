@@ -18,7 +18,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, PlusCircle, Save } from 'lucide-react';
+import { GripVertical, Trash2, PlusCircle, Save, Github, Linkedin, Twitter } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -594,21 +594,94 @@ function CommunityForm() {
   );
 }
 
+function ContactForm() {
+  const { toast } = useToast();
+  const { firestore, user } = useFirebase();
+  const profileId = 'main-profile';
 
-function PlaceholderTab({ title }: { title: string }) {
+  const profileRef = useMemoFirebase(() => {
+    if (!user?.uid || !firestore) return null;
+    return doc(firestore, 'users', user.uid, 'profiles', profileId);
+  }, [user?.uid, firestore]);
+
+  const { data: profileData, isLoading } = useDoc<Profile>(profileRef);
+
+  const [email, setEmail] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [twitterUrl, setTwitterUrl] = useState('');
+
+  useEffect(() => {
+    if (profileData) {
+      setEmail(profileData.email || '');
+      setGithubUrl(profileData.githubUrl || '');
+      setLinkedinUrl(profileData.linkedinUrl || '');
+      setTwitterUrl(profileData.twitterUrl || '');
+    }
+  }, [profileData]);
+
+  const handleSaveChanges = () => {
+    if (!profileRef) {
+      toast({
+        variant: 'destructive',
+        title: 'Error!',
+        description: 'You must be logged in to save changes.',
+      });
+      return;
+    }
+    const updatedData: Partial<Profile> = {
+      email,
+      githubUrl,
+      linkedinUrl,
+      twitterUrl,
+    };
+    setDocumentNonBlocking(profileRef, updatedData, { merge: true });
+    toast({
+      title: 'Success!',
+      description: 'Contact information has been updated.',
+    });
+  };
+  
+  if (isLoading) {
+    return <p>Loading contact info...</p>
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>
-          Management features for the {title.toLowerCase()} page will be implemented here.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground">Coming soon...</p>
-      </CardContent>
-    </Card>
-  )
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium">Contact & Socials</h3>
+        <p className="text-sm text-muted-foreground">Update your email and social media links.</p>
+      </div>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="githubUrl">GitHub URL</Label>
+          <div className="flex items-center gap-2">
+            <Github className="h-5 w-5 text-muted-foreground" />
+            <Input id="githubUrl" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
+           <div className="flex items-center gap-2">
+            <Linkedin className="h-5 w-5 text-muted-foreground" />
+            <Input id="linkedinUrl" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="twitterUrl">Twitter/X URL</Label>
+          <div className="flex items-center gap-2">
+            <Twitter className="h-5 w-5 text-muted-foreground" />
+            <Input id="twitterUrl" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} />
+          </div>
+        </div>
+      </div>
+      <Button onClick={handleSaveChanges}>Save Changes</Button>
+    </div>
+  );
 }
 
 export default function AdminDashboardPage() {
@@ -658,7 +731,7 @@ export default function AdminDashboardPage() {
                  <CommunityForm />
               </TabsContent>
               <TabsContent value="contact" className="pt-6">
-                 <PlaceholderTab title="Contact Page" />
+                 <ContactForm />
               </TabsContent>
             </Tabs>
           </CardContent>
@@ -667,7 +740,3 @@ export default function AdminDashboardPage() {
     </main>
   );
 }
-
-    
-
-    

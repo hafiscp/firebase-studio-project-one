@@ -41,6 +41,11 @@
           "type": "string",
           "description": "URL to the user's LinkedIn profile.",
           "format": "uri"
+        },
+        "twitterUrl": {
+          "type": "string",
+          "description": "URL to the user's Twitter profile.",
+          "format": "uri"
         }
       },
       "required": [

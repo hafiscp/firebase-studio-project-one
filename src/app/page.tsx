@@ -22,13 +22,18 @@ export default function Home() {
   
   const { data: profile, isLoading } = useDoc<Profile>(profileRef);
 
-  // TODO: Fetch socials and navigation links from Firestore
-  const contact = { socials: [] };
+  // TODO: Fetch navigation links from Firestore
   const navigationLinks = [
       { "label": "About", "href": "/about" },
       { "label": "Contributions", "href": "/contributions" },
       { "label": "Community", "href": "/community" }
   ]
+
+  const socialLinks = [
+    { key: 'githubUrl', Icon: Github, name: 'GitHub' },
+    { key: 'linkedinUrl', Icon: Linkedin, name: 'LinkedIn' },
+    { key: 'twitterUrl', Icon: Twitter, name: 'Twitter' },
+  ] as const;
 
   if (isLoading) {
     return (
@@ -60,23 +65,22 @@ export default function Home() {
         </nav>
 
         <div className="mt-8 flex justify-center gap-6">
-          {/* This part needs to be updated to fetch from firestore */}
-          {/*
-          {contact.socials.map((social) => (
-            <Link
-              key={social.name}
-              href={social.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={social.name}
-              className="text-muted-foreground transition-colors hover:text-primary"
-            >
-              {social.icon === 'Github' && <Github className="h-6 w-6" />}
-              {social.icon === 'Linkedin' && <Linkedin className="h-6 w-6" />}
-              {social.icon === 'Twitter' && <Twitter className="h-6 w-6" />}
-            </Link>
-          ))}
-          */}
+          {socialLinks.map(({ key, Icon, name }) => {
+            const url = profile?.[key];
+            if (!url) return null;
+            return (
+              <Link
+                key={name}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={name}
+                className="text-muted-foreground transition-colors hover:text-primary"
+              >
+                <Icon className="h-6 w-6" />
+              </Link>
+            );
+          })}
         </div>
       </div>
     </main>
