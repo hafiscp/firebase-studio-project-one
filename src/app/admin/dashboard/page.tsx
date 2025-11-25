@@ -369,17 +369,17 @@ type SortableCommunityItemProps = {
 
 function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
-  const [role, setRole] = useState(item.role);
-  const [communityName, setCommunityName] = useState(item.communityName);
-  const [description, setDescription] = useState(item.description);
+  const [role, setRole] = useState(item.role ?? '');
+  const [communityName, setCommunityName] = useState(item.communityName ?? '');
+  const [description, setDescription] = useState(item.description ?? '');
   const [startDate, setStartDate] = useState(item.startDate);
   const [endDate, setEndDate] = useState(item.endDate ?? '');
   const [isCurrent, setIsCurrent] = useState(item.isCurrent);
 
   useEffect(() => {
-    setRole(item.role);
-    setCommunityName(item.communityName);
-    setDescription(item.description);
+    setRole(item.role ?? '');
+    setCommunityName(item.communityName ?? '');
+    setDescription(item.description ?? '');
     setStartDate(item.startDate);
     setEndDate(item.endDate ?? '');
     setIsCurrent(item.isCurrent);
@@ -667,3 +667,5 @@ export default function AdminDashboardPage() {
     </main>
   );
 }
+
+    
