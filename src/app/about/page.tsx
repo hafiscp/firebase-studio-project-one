@@ -1,4 +1,6 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import data from '@/lib/cms-data.json';
 
 export default function AboutPage() {
   return (
@@ -9,7 +11,7 @@ export default function AboutPage() {
             <CardTitle className="font-headline text-3xl">About Me</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">This is the about page. Content will be added here.</p>
+            <div className="prose dark:prose-invert max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: data.about.content }} />
           </CardContent>
         </Card>
       </div>

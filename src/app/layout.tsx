@@ -1,8 +1,10 @@
+
 import type { Metadata } from 'next';
 import { cn } from '@/lib/utils';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ModeToggle } from '@/components/mode-toggle';
+import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'ProfileGrid',
@@ -37,6 +39,7 @@ export default function RootLayout({
             </div>
             {children}
           </div>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

@@ -1,3 +1,4 @@
+
 {
   "profile": {
     "name": "Alex Doe",
@@ -10,9 +11,9 @@
     { "label": "Lines of Code", "value": "2M+" }
   ],
   "navigationLinks": [
-    { "label": "My Story", "href": "#", "icon": "BookUser" },
-    { "label": "Projects", "href": "#", "icon": "Lightbulb" },
-    { "label": "Community", "href": "#", "icon": "Users" }
+    { "label": "About", "href": "/about", "icon": "BookUser" },
+    { "label": "Contributions", "href": "/contributions", "icon": "Lightbulb" },
+    { "label": "Community", "href": "/community", "icon": "Users" }
   ],
   "techStack": [
     { "name": "React" },
@@ -29,9 +30,14 @@
     "description": "Have a project in mind or just want to say hi? Feel free to reach out.",
     "email": "hello@alexdoe.com",
     "socials": [
-      { "name": "GitHub", "url": "#", "icon": "Github" },
-      { "name": "LinkedIn", "url": "#", "icon": "Linkedin" },
+      { "name": "Github", "url": "#", "icon": "Github" },
+      { "name": "Linkedin", "url": "#", "icon": "Linkedin" },
       { "name": "Twitter", "url": "#", "icon": "Twitter" }
     ]
-  }
+  },
+  "about": {
+    "content": "<p>This is the about page. You can edit this content in the admin dashboard.</p>"
+  },
+  "contributions": [],
+  "community": []
 }

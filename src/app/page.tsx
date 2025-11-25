@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Github, Linkedin, Twitter } from 'lucide-react';
 import Link from 'next/link';
@@ -16,16 +17,12 @@ export default function Home() {
         </p>
 
         <nav className="mt-8 flex flex-wrap justify-center gap-4">
-          <Button asChild variant="outline">
-            <Link href="/about">About</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/contributions">Contributions</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/community">Community</Link>
-          </Button>
-          <Button asChild variant="outline">
+          {data.navigationLinks.map((link) => (
+            <Button key={link.label} asChild variant="outline">
+              <Link href={link.href}>{link.label}</Link>
+            </Button>
+          ))}
+           <Button asChild variant="outline">
             <Link href="/contact">Contact</Link>
           </Button>
         </nav>
