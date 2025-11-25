@@ -103,7 +103,7 @@ function HomeForm() {
 const initialValue: Descendant[] = [
   {
     type: 'paragraph',
-    children: [{ text: 'This is the about page. You can edit this content in the admin dashboard.' }],
+    children: [{ text: '' }],
   },
 ]
 
@@ -124,13 +124,24 @@ function AboutForm() {
   useEffect(() => {
     if (profileData?.bio) {
         try {
+            // Attempt to parse the bio as JSON (Slate format)
             const parsedBio = JSON.parse(profileData.bio);
-            setBio(parsedBio);
+            // Basic validation to check if it's a valid Slate structure
+            if (Array.isArray(parsedBio) && parsedBio.length > 0 && parsedBio[0].type) {
+                 setBio(parsedBio);
+            } else {
+                 // If parsing succeeds but it's not valid Slate, treat as plain text
+                 setBio([{ type: 'paragraph', children: [{ text: profileData.bio }] }]);
+            }
         } catch (e) {
+            // If it's not valid JSON, treat it as a plain text string
             setBio([{ type: 'paragraph', children: [{ text: profileData.bio }] }]);
         }
+    } else if (!isLoading) {
+        // If there's no bio and we're not loading, set it to the initial empty value
+        setBio(initialValue);
     }
-  }, [profileData]);
+  }, [profileData, isLoading]);
 
   const handleSaveChanges = () => {
     if (!profileRef) {

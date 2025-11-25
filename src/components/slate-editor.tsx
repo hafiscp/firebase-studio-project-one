@@ -2,14 +2,14 @@
 'use client';
 
 import React, { useCallback, useMemo } from 'react'
-import { createEditor, Descendant, Editor, Transforms, Element as SlateElement, Text } from 'slate'
-import { Slate, Editable, withReact, ReactEditor } from 'slate-react'
+import { createEditor, Descendant, Editor, Transforms, Element as SlateElement, Text as SlateText } from 'slate'
+import { Slate, Editable, withReact, ReactEditor, useSlate } from 'slate-react'
 import { withHistory } from 'slate-history'
-import { Bold, Italic, Underline } from 'lucide-react';
+import { Bold, Italic, Underline, Link } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
-type CustomElement = { type: 'paragraph'; children: CustomText[] }
+type CustomElement = { type: 'paragraph' | 'link'; url?: string; children: CustomText[] }
 type CustomText = { text: string; bold?: true, italic?: true, underline?: true }
 
 declare module 'slate' {
@@ -61,22 +61,27 @@ const Leaf = ({ attributes, children, leaf }: { attributes: any, children: any, 
     return <span {...attributes}>{children}</span>
 }
 
-const Element = ({ attributes, children, element }: { attributes: any, children: any, element: CustomElement }) => {
+const Element = (props: any) => {
+    const { attributes, children, element } = props;
     switch (element.type) {
+        case 'link':
+            return <a {...attributes} href={element.url}>{children}</a>
         case 'paragraph':
-            return <p {...attributes}>{children}</p>
         default:
-            return <div {...attributes}>{children}</div>
+            return <p {...attributes}>{children}</p>
     }
 }
 
+
 const MarkButton = ({ format, icon }: { format: 'bold' | 'italic' | 'underline', icon: React.ReactNode }) => {
-    const editor = useMemo(() => withReact(withHistory(createEditor())), [])
+    const editor = useSlate()
     return (
         <Button
             variant="outline"
             size="icon"
-            className={cn("h-8 w-8", isMarkActive(editor, format) ? 'is-active' : '')}
+            className={cn("h-8 w-8", {
+                'bg-muted': isMarkActive(editor, format)
+            })}
             onMouseDown={event => {
                 event.preventDefault()
                 toggleMark(editor, format)
@@ -93,19 +98,20 @@ export function SlateEditor({ value, onChange }: SlateEditorProps) {
     const renderLeaf = useCallback((props: any) => <Leaf {...props} />, [])
 
   return (
-    <Slate editor={editor} initialValue={value} onChange={onChange}>
+    <Slate editor={editor} value={value} onChange={onChange}>
         <div className='border rounded-md'>
-            <div className='p-2 flex gap-2 border-b'>
+            <div className='p-2 flex gap-2 border-b bg-muted/50'>
                  <MarkButton format="bold" icon={<Bold className="h-4 w-4" />} />
                  <MarkButton format="italic" icon={<Italic className="h-4 w-4" />} />
                  <MarkButton format="underline" icon={<Underline className="h-4 w-4" />} />
             </div>
             <Editable
-                className="p-4 min-h-[150px] focus:outline-none"
+                className="p-4 min-h-[250px] focus:outline-none"
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
-                placeholder="Enter some rich text…"
+                placeholder="Tell your story..."
                 spellCheck
+                autoFocus
             />
         </div>
     </Slate>
