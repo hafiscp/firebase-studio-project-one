@@ -70,10 +70,18 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   });
   const router = useRouter();
 
+  // Memoize the core Firebase services to ensure they are stable across re-renders.
+  // This is crucial to prevent hooks that depend on these services from re-running unnecessarily.
+  const stableServices = useMemo(() => ({
+    firebaseApp,
+    firestore,
+    auth,
+  }), [firebaseApp, firestore, auth]);
+
 
   // Effect to subscribe to Firebase auth state changes
   useEffect(() => {
-    if (!auth) { // If no Auth service instance, cannot determine user state
+    if (!stableServices.auth) { // If no Auth service instance, cannot determine user state
       setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth service not provided.") });
       return;
     }
@@ -81,13 +89,13 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     setUserAuthState({ user: null, isUserLoading: true, userError: null }); // Reset on auth instance change
 
     const unsubscribe = onAuthStateChanged(
-      auth,
+      stableServices.auth,
       (firebaseUser) => { // Auth state determined
         if (firebaseUser) {
           setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
         } else {
             // Create the admin user if it doesn't exist
-            createUserWithEmailAndPassword(auth, 'admin@example.com', '@dmin123').catch(error => {
+            createUserWithEmailAndPassword(stableServices.auth, 'admin@example.com', '@dmin123').catch(error => {
                 // Ignore 'email-already-in-use' error, as it means admin exists.
                 // For other errors, you might want to log them.
                 if (error.code !== 'auth/email-already-in-use') {
@@ -104,21 +112,21 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       }
     );
     return () => unsubscribe(); // Cleanup
-  }, [auth, router]);
+  }, [stableServices.auth, router]);
 
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {
-    const servicesAvailable = !!(firebaseApp && firestore && auth);
+    const servicesAvailable = !!(stableServices.firebaseApp && stableServices.firestore && stableServices.auth);
     return {
       areServicesAvailable: servicesAvailable,
-      firebaseApp: servicesAvailable ? firebaseApp : null,
-      firestore: servicesAvailable ? firestore : null,
-      auth: servicesAvailable ? auth : null,
+      firebaseApp: servicesAvailable ? stableServices.firebaseApp : null,
+      firestore: servicesAvailable ? stableServices.firestore : null,
+      auth: servicesAvailable ? stableServices.auth : null,
       user: userAuthState.user,
       isUserLoading: userAuthState.isUserLoading,
       userError: userAuthState.userError,
     };
-  }, [firebaseApp, firestore, auth, userAuthState]);
+  }, [stableServices, userAuthState]);
 
   return (
     <FirebaseContext.Provider value={contextValue}>
