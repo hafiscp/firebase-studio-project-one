@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState, useMemo } from 'react';
-import { useCollection, useDoc, useFirebase, useMemoFirebase } from '@/firebase';
+import { useCollection, useDoc, useFirebase, useMemoFirebase, useAuth } from '@/firebase';
 import { collection, doc, writeBatch, query, orderBy } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Profile, Contribution, CommunityInvolvement } from '@/lib/entities';
 import { useRouter } from 'next/navigation';
@@ -18,9 +19,12 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, PlusCircle, Save, Github, Linkedin, Twitter } from 'lucide-react';
+import { GripVertical, Trash2, PlusCircle, Save, Github, Linkedin, Twitter, LogOut } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
+
+// This is the single source of truth for the user whose content is being managed.
+const ADMIN_USER_ID = 'arxO7bMR0vPj8KeHwyHExv2h5vz2';
 
 function HomeForm() {
   const { toast } = useToast();
@@ -28,9 +32,9 @@ function HomeForm() {
   const profileId = 'main-profile';
 
   const profileRef = useMemoFirebase(() => {
-    if (!user?.uid || !firestore) return null;
-    return doc(firestore, 'users', user.uid, 'profiles', profileId);
-  }, [user?.uid, firestore]);
+    if (!firestore) return null;
+    return doc(firestore, 'users', ADMIN_USER_ID, 'profiles', profileId);
+  }, [firestore]);
 
   const { data: profileData, isLoading } = useDoc<Profile>(profileRef);
 
@@ -62,13 +66,13 @@ function HomeForm() {
         title: title,
       };
     } else {
-      updatedData = {
+       updatedData = {
         id: profileId,
         fullName: name,
         title: title,
         bio: 'Default bio.',
         location: 'Default location.',
-        email: user.email || 'no-email@example.com',
+        email: 'admin@example.com',
       };
     }
     
@@ -111,9 +115,9 @@ function AboutForm() {
   const profileId = 'main-profile';
 
   const profileRef = useMemoFirebase(() => {
-    if (!user?.uid || !firestore) return null;
-    return doc(firestore, 'users', user.uid, 'profiles', profileId);
-  }, [user?.uid, firestore]);
+    if (!firestore) return null;
+    return doc(firestore, 'users', ADMIN_USER_ID, 'profiles', profileId);
+  }, [firestore]);
 
   const { data: profileData, isLoading } = useDoc<Profile>(profileRef);
 
@@ -126,7 +130,7 @@ function AboutForm() {
   }, [profileData]);
 
   const handleSaveChanges = () => {
-    if (!profileRef) {
+    if (!profileRef || !user) {
       toast({
         variant: 'destructive',
         title: 'Error!',
@@ -257,13 +261,13 @@ function SortableContributionItem({ item, onSave, onDelete }: SortableContributi
 
 function ContributionsForm() {
     const { toast } = useToast();
-    const { firestore, user } = useFirebase();
+    const { firestore } = useFirebase();
     const profileId = 'main-profile';
 
     const contributionsCollectionRef = useMemoFirebase(() => {
-        if (!user?.uid || !firestore) return null;
-        return collection(firestore, 'users', user.uid, 'profiles', profileId, 'contributions');
-    }, [user?.uid, firestore]);
+        if (!firestore) return null;
+        return collection(firestore, 'users', ADMIN_USER_ID, 'profiles', profileId, 'contributions');
+    }, [firestore]);
     
     const contributionsQuery = useMemoFirebase(() => {
         if(!contributionsCollectionRef) return null;
@@ -280,7 +284,7 @@ function ContributionsForm() {
     }, [contributionsData]);
 
     const handleCreateContribution = () => {
-        if (!contributionsCollectionRef || !user) return;
+        if (!contributionsCollectionRef) return;
         const newOrder = items.length > 0 ? Math.max(...items.map(i => i.order)) + 1 : 0;
         const newContribution: Omit<Contribution, 'id'> = {
             profileId: profileId,
@@ -318,10 +322,10 @@ function ContributionsForm() {
             
             setItems(newItems);
             
-            if (!firestore || !user) return;
+            if (!firestore) return;
             const batch = writeBatch(firestore);
             newItems.forEach((item, index) => {
-                const docRef = doc(firestore, `users/${user.uid}/profiles/${profileId}/contributions`, item.id);
+                const docRef = doc(firestore, `users/${ADMIN_USER_ID}/profiles/${profileId}/contributions`, item.id);
                 batch.update(docRef, { order: index });
             });
             await batch.commit();
@@ -487,13 +491,13 @@ function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItem
 
 function CommunityForm() {
   const { toast } = useToast();
-  const { firestore, user } = useFirebase();
+  const { firestore } = useFirebase();
   const profileId = 'main-profile';
 
   const communityCollectionRef = useMemoFirebase(() => {
-    if (!user?.uid || !firestore) return null;
-    return collection(firestore, 'users', user.uid, 'profiles', profileId, 'communityInvolvements');
-  }, [user?.uid, firestore]);
+    if (!firestore) return null;
+    return collection(firestore, 'users', ADMIN_USER_ID, 'profiles', profileId, 'communityInvolvements');
+  }, [firestore]);
 
   const communityQuery = useMemoFirebase(() => {
     if (!communityCollectionRef) return null;
@@ -510,7 +514,7 @@ function CommunityForm() {
   }, [communityData]);
 
   const handleCreateItem = () => {
-    if (!communityCollectionRef || !user) return;
+    if (!communityCollectionRef) return;
     const newOrder = items.length > 0 ? Math.max(...items.map(i => i.order)) + 1 : 0;
     const newItem: Omit<CommunityInvolvement, 'id'> = {
       profileId: profileId,
@@ -551,10 +555,10 @@ function CommunityForm() {
 
       setItems(newItems);
 
-      if (!firestore || !user) return;
+      if (!firestore) return;
       const batch = writeBatch(firestore);
       newItems.forEach((item, index) => {
-        const docRef = doc(firestore, `users/${user.uid}/profiles/${profileId}/communityInvolvements`, item.id);
+        const docRef = doc(firestore, `users/${ADMIN_USER_ID}/profiles/${profileId}/communityInvolvements`, item.id);
         batch.update(docRef, { order: index });
       });
       await batch.commit();
@@ -600,9 +604,9 @@ function ContactForm() {
   const profileId = 'main-profile';
 
   const profileRef = useMemoFirebase(() => {
-    if (!user?.uid || !firestore) return null;
-    return doc(firestore, 'users', user.uid, 'profiles', profileId);
-  }, [user?.uid, firestore]);
+    if (!firestore) return null;
+    return doc(firestore, 'users', ADMIN_USER_ID, 'profiles', profileId);
+  }, [firestore]);
 
   const { data: profileData, isLoading } = useDoc<Profile>(profileRef);
 
@@ -621,7 +625,7 @@ function ContactForm() {
   }, [profileData]);
 
   const handleSaveChanges = () => {
-    if (!profileRef) {
+    if (!profileRef || !user) {
       toast({
         variant: 'destructive',
         title: 'Error!',
@@ -686,6 +690,7 @@ function ContactForm() {
 
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useFirebase();
+  const auth = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -693,6 +698,10 @@ export default function AdminDashboardPage() {
       router.replace('/admin');
     }
   }, [user, isUserLoading, router]);
+
+  const handleLogout = () => {
+    signOut(auth);
+  };
 
   if (isUserLoading || !user) {
     return (
@@ -706,8 +715,13 @@ export default function AdminDashboardPage() {
       <div className="mx-auto max-w-screen-2xl">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline text-3xl">Admin Dashboard</CardTitle>
-            <CardDescription>Manage the content for your website pages.</CardDescription>
+             <div className="flex justify-between items-center">
+                <div className="space-y-1.5">
+                    <CardTitle className="font-headline text-3xl">Admin Dashboard</CardTitle>
+                    <CardDescription>Manage the content for your website pages.</CardDescription>
+                </div>
+                <Button variant="outline" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
+            </div>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="home">
