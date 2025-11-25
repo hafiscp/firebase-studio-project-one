@@ -1,7 +1,7 @@
 
 'use client';
 import { Button } from '@/components/ui/button';
-import { Github, Linkedin, Twitter } from 'lucide-react';
+import { Github, Linkedin, Twitter, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useDoc, useFirebase, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -33,7 +33,7 @@ export default function Home() {
   if (isLoading) {
     return (
        <main className="flex h-screen flex-col items-center justify-center bg-background text-center p-4">
-        <p>Loading...</p>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </main>
     )
   }
