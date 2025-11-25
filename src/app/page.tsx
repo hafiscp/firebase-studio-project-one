@@ -7,16 +7,18 @@ import { useDoc, useFirebase, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Profile } from '@/lib/entities';
 
+// This should be the UID of the admin user who manages the content.
+// This allows any visitor to view the admin's portfolio content.
+const ADMIN_USER_ID = 'arxO7bMR0vPj8KeHwyHExv2h5vz2';
+
 export default function Home() {
-  const { firestore, user } = useFirebase();
+  const { firestore } = useFirebase();
 
   const profileRef = useMemoFirebase(() => {
-    // Only construct the document reference if we have a user and firestore instance.
-    if (!user || !firestore) return null;
-    
-    // Fetch the profile for the currently logged-in user.
-    return doc(firestore, 'users', user.uid, 'profiles', 'main-profile');
-  }, [firestore, user]);
+    // Always fetch the admin's profile, regardless of who is visiting.
+    if (!firestore) return null;
+    return doc(firestore, 'users', ADMIN_USER_ID, 'profiles', 'main-profile');
+  }, [firestore]);
   
   const { data: profile, isLoading } = useDoc<Profile>(profileRef);
 
