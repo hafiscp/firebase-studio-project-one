@@ -22,7 +22,7 @@ export default function LiquidEther({
   autoSpeed = 0.5,
   autoIntensity = 2.2,
   takeoverDuration = 0.25,
-  autoResumeDelay = 1000,
+  autoResumeDelay = 3000,
   autoRampDuration = 0.6
 }) {
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -463,7 +463,7 @@ export default function LiquidEther({
     vec3 c = texture2D(palette, vec2(lenv, 0.5)).rgb;
     vec3 outRGB = mix(bgColor.rgb, c, lenv);
     float outA = mix(bgColor.a, 1.0, lenv);
-    gl_FragColor = vec4(outRGB, outA);
+    gl_FragColor = vec4(outRGB, outA * 0.2);
 }
 `;
     const divergence_frag = `
