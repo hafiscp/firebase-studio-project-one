@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +13,7 @@ import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Profile } from '@/lib/entities';
 import { useRouter } from 'next/navigation';
-import { QuillEditor } from '@/components/quill-editor';
+import { Textarea } from '@/components/ui/textarea';
 
 
 function HomeForm() {
@@ -147,7 +148,7 @@ function AboutForm() {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="bio">Bio</Label>
-          <QuillEditor value={bio} onChange={setBio} />
+          <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={10} />
         </div>
       </div>
       <Button onClick={handleSaveChanges}>Save Changes</Button>
