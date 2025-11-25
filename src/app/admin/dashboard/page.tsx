@@ -7,14 +7,19 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState } from 'react';
-import { useDoc, useFirebase, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import type { Profile } from '@/lib/entities';
+import { useEffect, useState, useMemo } from 'react';
+import { useCollection, useDoc, useFirebase, useMemoFirebase } from '@/firebase';
+import { collection, doc, writeBatch, query, orderBy } from 'firebase/firestore';
+import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import type { Profile, Contribution } from '@/lib/entities';
 import { useRouter } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
-
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Trash2, PlusCircle } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 function HomeForm() {
   const { toast } = useToast();
@@ -163,6 +168,180 @@ function AboutForm() {
   );
 }
 
+type SortableContributionItemProps = {
+  item: Contribution;
+  onUpdate: (id: string, field: keyof Contribution, value: string) => void;
+  onDelete: (id: string) => void;
+};
+
+function SortableContributionItem({ item, onUpdate, onDelete }: SortableContributionItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="bg-card p-4 rounded-lg border flex items-center gap-4">
+      <div {...attributes} {...listeners} className="cursor-grab p-2">
+        <GripVertical className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value={item.id} className="border-b-0">
+          <AccordionTrigger className="hover:no-underline">
+            <Input
+              value={item.heading}
+              onChange={(e) => onUpdate(item.id, 'heading', e.target.value)}
+              className="text-lg font-medium border-none shadow-none focus-visible:ring-0"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </AccordionTrigger>
+          <AccordionContent className="pt-4 space-y-4">
+            <div className="space-y-2">
+              <Label>Date</Label>
+              <Input
+                type="date"
+                value={item.date}
+                onChange={(e) => onUpdate(item.id, 'date', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Content</Label>
+              <Textarea
+                value={item.content}
+                onChange={(e) => onUpdate(item.id, 'content', e.target.value)}
+                rows={5}
+              />
+            </div>
+             <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete the contribution: "{item.heading}". This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDelete(item.id)}>Continue</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  );
+}
+
+function ContributionsForm() {
+    const { toast } = useToast();
+    const { firestore, user } = useFirebase();
+    const profileId = 'main-profile';
+
+    const contributionsCollectionRef = useMemoFirebase(() => {
+        if (!user?.uid || !firestore) return null;
+        return collection(firestore, 'users', user.uid, 'profiles', profileId, 'contributions');
+    }, [user?.uid, firestore]);
+    
+    const contributionsQuery = useMemoFirebase(() => {
+        if(!contributionsCollectionRef) return null;
+        return query(contributionsCollectionRef, orderBy('order'));
+    }, [contributionsCollectionRef]);
+
+    const { data: contributionsData, isLoading } = useCollection<Contribution>(contributionsQuery);
+    const [items, setItems] = useState<Contribution[]>([]);
+
+    useEffect(() => {
+        if (contributionsData) {
+            setItems(contributionsData);
+        }
+    }, [contributionsData]);
+
+    const handleCreateContribution = () => {
+        if (!contributionsCollectionRef || !user) return;
+        const newOrder = items.length > 0 ? Math.max(...items.map(i => i.order)) + 1 : 0;
+        const newContribution: Omit<Contribution, 'id'> = {
+            profileId: profileId,
+            heading: 'New Contribution',
+            date: new Date().toISOString().split('T')[0],
+            content: '',
+            order: newOrder,
+        };
+        addDocumentNonBlocking(contributionsCollectionRef, newContribution);
+    };
+    
+    const handleUpdateContribution = (id: string, field: keyof Contribution, value: string) => {
+      const updatedItems = items.map(item => item.id === id ? { ...item, [field]: value } : item);
+      setItems(updatedItems);
+      
+      if (!contributionsCollectionRef) return;
+      const docRef = doc(contributionsCollectionRef, id);
+      setDocumentNonBlocking(docRef, { [field]: value }, { merge: true });
+    };
+
+    const handleDeleteContribution = (id: string) => {
+        if (!contributionsCollectionRef) return;
+        const docRef = doc(contributionsCollectionRef, id);
+        deleteDocumentNonBlocking(docRef);
+        toast({ title: "Success!", description: "Contribution has been deleted." });
+    };
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (active.id !== over?.id) {
+            const oldIndex = items.findIndex((item) => item.id === active.id);
+            const newIndex = items.findIndex((item) => item.id === over!.id);
+            const newItems = arrayMove(items, oldIndex, newIndex);
+            
+            setItems(newItems);
+            
+            if (!firestore) return;
+            const batch = writeBatch(firestore);
+            newItems.forEach((item, index) => {
+                const docRef = doc(firestore, `users/${user?.uid}/profiles/${profileId}/contributions`, item.id);
+                batch.update(docRef, { order: index });
+            });
+            await batch.commit();
+            toast({ title: "Success!", description: "Contribution order has been updated." });
+        }
+    };
+
+    if (isLoading) {
+        return <p>Loading contributions...</p>;
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h3 className="text-lg font-medium">Contributions Page</h3>
+                    <p className="text-sm text-muted-foreground">Manage your contributions.</p>
+                </div>
+                <Button onClick={handleCreateContribution}><PlusCircle className="mr-2 h-4 w-4"/> Create New</Button>
+            </div>
+            
+            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-4">
+                        {items.map(item => (
+                            <SortableContributionItem 
+                              key={item.id} 
+                              item={item} 
+                              onUpdate={handleUpdateContribution}
+                              onDelete={handleDeleteContribution}
+                            />
+                        ))}
+                    </div>
+                </SortableContext>
+            </DndContext>
+        </div>
+    );
+}
 
 function PlaceholderTab({ title }: { title: string }) {
   return (
@@ -221,7 +400,7 @@ export default function AdminDashboardPage() {
                  <AboutForm />
               </TabsContent>
               <TabsContent value="contributions" className="pt-6">
-                 <PlaceholderTab title="Contributions Page" />
+                 <ContributionsForm />
               </TabsContent>
               <TabsContent value="community" className="pt-6">
                  <PlaceholderTab title="Community Page" />

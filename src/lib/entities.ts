@@ -41,3 +41,12 @@ export type ContactMethod = {
     url: string;
     label: string;
 };
+
+export type Contribution = {
+    id: string;
+    profileId: string;
+    heading: string;
+    date: string;
+    content: string;
+    order: number;
+};
