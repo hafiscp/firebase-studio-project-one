@@ -47,7 +47,7 @@ export default function Home() {
     <main className="flex h-screen flex-col items-center justify-center bg-background text-center p-4">
       <div className="max-w-3xl">
         <h1 className="font-headline text-5xl md:text-7xl font-bold text-foreground">
-          {profile?.fullName || 'Your Name'}
+          {profile?.fullName || 'Hafis CP'}
         </h1>
         <p className="mt-4 text-lg md:text-xl text-muted-foreground">
           {profile?.title || 'Your Title'}
@@ -55,11 +55,11 @@ export default function Home() {
 
         <nav className="mt-8 flex flex-wrap justify-center gap-4">
           {navigationLinks.map((link) => (
-            <Button key={link.label} asChild variant="outline">
+            <Button key={link.label} asChild variant="ghost">
               <Link href={link.href}>{link.label}</Link>
             </Button>
           ))}
-           <Button asChild variant="outline">
+           <Button asChild variant="ghost">
             <Link href="/contact">Contact</Link>
           </Button>
         </nav>
