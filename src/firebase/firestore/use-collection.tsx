@@ -58,7 +58,8 @@ export function useCollection<T = any>(
   type StateDataType = ResultItemType[] | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // Initialize isLoading to true if a ref is provided, false otherwise.
+  const [isLoading, setIsLoading] = useState<boolean>(!!memoizedTargetRefOrQuery);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export function useCollection<T = any>(
       return;
     }
 
+    // Set loading to true whenever the query changes and a query exists.
     setIsLoading(true);
     setError(null);
 
