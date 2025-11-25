@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
@@ -49,20 +50,18 @@ function HomeForm() {
     let updatedData: Partial<Profile>;
 
     if (profileData) {
-      // If profile exists, just update the fields
       updatedData = {
         fullName: name,
         title: title,
       };
     } else {
-      // If profile does not exist, create it with all required fields
       updatedData = {
         id: profileId,
         fullName: name,
         title: title,
-        bio: 'Default bio.', // Provide default value
-        location: 'Default location.', // Provide default value
-        email: user.email || 'no-email@example.com', // Provide default value
+        bio: 'Default bio.',
+        location: 'Default location.',
+        email: user.email || 'no-email@example.com',
       };
     }
     
@@ -98,6 +97,64 @@ function HomeForm() {
     </div>
   );
 }
+
+function AboutForm() {
+  const { toast } = useToast();
+  const { firestore, user } = useFirebase();
+  const profileId = 'main-profile';
+
+  const profileRef = useMemoFirebase(() => {
+    if (!user?.uid || !firestore) return null;
+    return doc(firestore, 'users', user.uid, 'profiles', profileId);
+  }, [user?.uid, firestore]);
+
+  const { data: profileData, isLoading } = useDoc<Profile>(profileRef);
+
+  const [bio, setBio] = useState('');
+
+  useEffect(() => {
+    if (profileData) {
+      setBio(profileData.bio || '');
+    }
+  }, [profileData]);
+
+  const handleSaveChanges = () => {
+    if (!profileRef) {
+      toast({
+        variant: 'destructive',
+        title: 'Error!',
+        description: 'You must be logged in to save changes.',
+      });
+      return;
+    }
+    setDocumentNonBlocking(profileRef, { bio }, { merge: true });
+    toast({
+      title: 'Success!',
+      description: 'About page content has been updated.',
+    });
+  };
+
+  if (isLoading) {
+    return <p>Loading about content...</p>
+  }
+  
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium">About Page Content</h3>
+        <p className="text-sm text-muted-foreground">Update the content for your about page. You can use HTML for formatting.</p>
+      </div>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="bio">Bio</Label>
+          <Textarea id="bio" name="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={10} />
+        </div>
+      </div>
+      <Button onClick={handleSaveChanges}>Save Changes</Button>
+    </div>
+  );
+}
+
 
 function PlaceholderTab({ title }: { title: string }) {
   return (
@@ -153,7 +210,7 @@ export default function AdminDashboardPage() {
                 <HomeForm />
               </TabsContent>
               <TabsContent value="about" className="pt-6">
-                 <PlaceholderTab title="About Page" />
+                 <AboutForm />
               </TabsContent>
               <TabsContent value="contributions" className="pt-6">
                  <PlaceholderTab title="Contributions Page" />
