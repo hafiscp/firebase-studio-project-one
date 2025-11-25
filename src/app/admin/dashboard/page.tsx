@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
@@ -13,6 +12,7 @@ import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Profile } from '@/lib/entities';
 import { useRouter } from 'next/navigation';
+import { QuillEditor } from '@/components/quill-editor';
 
 
 function HomeForm() {
@@ -147,7 +147,7 @@ function AboutForm() {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="bio">Bio</Label>
-          <Textarea id="bio" name="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={10} />
+          <QuillEditor value={bio} onChange={setBio} />
         </div>
       </div>
       <Button onClick={handleSaveChanges}>Save Changes</Button>
