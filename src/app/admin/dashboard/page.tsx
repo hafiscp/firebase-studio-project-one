@@ -13,8 +13,7 @@ import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Profile } from '@/lib/entities';
 import { useRouter } from 'next/navigation';
-import { SlateEditor } from '@/components/slate-editor';
-import { Descendant } from 'slate';
+import { Textarea } from '@/components/ui/textarea';
 
 
 function HomeForm() {
@@ -100,13 +99,6 @@ function HomeForm() {
   );
 }
 
-const initialValue: Descendant[] = [
-  {
-    type: 'paragraph',
-    children: [{ text: '' }],
-  },
-]
-
 function AboutForm() {
   const { toast } = useToast();
   const { firestore, user } = useFirebase();
@@ -119,29 +111,13 @@ function AboutForm() {
 
   const { data: profileData, isLoading } = useDoc<Profile>(profileRef);
 
-  const [bio, setBio] = useState<Descendant[]>(initialValue);
+  const [bio, setBio] = useState('');
 
   useEffect(() => {
-    if (profileData?.bio) {
-        try {
-            // Attempt to parse the bio as JSON (Slate format)
-            const parsedBio = JSON.parse(profileData.bio);
-            // Basic validation to check if it's a valid Slate structure
-            if (Array.isArray(parsedBio) && parsedBio.length > 0 && parsedBio[0].type) {
-                 setBio(parsedBio);
-            } else {
-                 // If parsing succeeds but it's not valid Slate, treat as plain text
-                 setBio([{ type: 'paragraph', children: [{ text: profileData.bio }] }]);
-            }
-        } catch (e) {
-            // If it's not valid JSON, treat it as a plain text string
-            setBio([{ type: 'paragraph', children: [{ text: profileData.bio }] }]);
-        }
-    } else if (!isLoading) {
-        // If there's no bio and we're not loading, set it to the initial empty value
-        setBio(initialValue);
+    if (profileData) {
+      setBio(profileData.bio || '');
     }
-  }, [profileData, isLoading]);
+  }, [profileData]);
 
   const handleSaveChanges = () => {
     if (!profileRef) {
@@ -152,7 +128,7 @@ function AboutForm() {
       });
       return;
     }
-    setDocumentNonBlocking(profileRef, { bio: JSON.stringify(bio) }, { merge: true });
+    setDocumentNonBlocking(profileRef, { bio: bio }, { merge: true });
     toast({
       title: 'Success!',
       description: 'About page content has been updated.',
@@ -172,7 +148,14 @@ function AboutForm() {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="bio">Bio</Label>
-           <SlateEditor value={bio} onChange={setBio} />
+           <Textarea 
+             id="bio"
+             name="bio"
+             value={bio}
+             onChange={(e) => setBio(e.target.value)}
+             rows={10}
+             placeholder="Tell your story..."
+           />
         </div>
       </div>
       <Button onClick={handleSaveChanges}>Save Changes</Button>
