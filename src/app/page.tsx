@@ -1,18 +1,51 @@
-import { ProfileCard } from '@/components/profile-card';
-import { KeyMetricsCard } from '@/components/key-metrics-card';
-import { NavigationCard } from '@/components/navigation-card';
-import { TechStackCard } from '@/components/tech-stack-card';
-import { ContactCard } from '@/components/contact-card';
+import { Button } from '@/components/ui/button';
+import { Github, Linkedin, Twitter } from 'lucide-react';
+import Link from 'next/link';
+import data from '@/lib/cms-data.json';
 
 export default function Home() {
+  const { profile, contact } = data;
   return (
-    <main className="min-h-screen w-full bg-background p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto grid h-full max-w-screen-2xl grid-cols-1 gap-6 lg:grid-cols-6 lg:grid-rows-6 lg:h-[calc(100vh-4rem)]">
-        <ProfileCard className="lg:col-start-1 lg:col-span-3 lg:row-start-1 lg:row-span-4" />
-        <KeyMetricsCard className="lg:col-start-4 lg:col-span-3 lg:row-start-1 lg:row-span-2" />
-        <NavigationCard className="lg:col-start-1 lg:col-span-3 lg:row-start-5 lg:row-span-2" />
-        <TechStackCard className="lg:col-start-4 lg:col-span-3 lg:row-start-3 lg:row-span-2" />
-        <ContactCard className="lg:col-start-4 lg:col-span-3 lg:row-start-5 lg:row-span-2" />
+    <main className="flex h-screen flex-col items-center justify-center bg-background text-center p-4">
+      <div className="max-w-3xl">
+        <h1 className="font-headline text-5xl md:text-7xl font-bold text-foreground">
+          {profile.name}
+        </h1>
+        <p className="mt-4 text-lg md:text-xl text-muted-foreground">
+          {profile.title}
+        </p>
+
+        <nav className="mt-8 flex flex-wrap justify-center gap-4">
+          <Button asChild variant="outline">
+            <Link href="/about">About</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/contributions">Contributions</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/community">Community</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/contact">Contact</Link>
+          </Button>
+        </nav>
+
+        <div className="mt-8 flex justify-center gap-6">
+          {contact.socials.map((social) => (
+            <Link
+              key={social.name}
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={social.name}
+              className="text-muted-foreground transition-colors hover:text-primary"
+            >
+              {social.icon === 'Github' && <Github className="h-6 w-6" />}
+              {social.icon === 'Linkedin' && <Linkedin className="h-6 w-6" />}
+              {social.icon === 'Twitter' && <Twitter className="h-6 w-6" />}
+            </Link>
+          ))}
+        </div>
       </div>
     </main>
   );
