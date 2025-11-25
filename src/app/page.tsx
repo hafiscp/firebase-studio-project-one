@@ -1,5 +1,7 @@
 
 'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Github, Linkedin, Twitter, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -16,6 +18,8 @@ const ADMIN_USER_ID = 'arxO7bMR0vPj8KeHwyHExv2h5vz2';
 
 export default function Home() {
   const { firestore } = useFirebase();
+  const router = useRouter();
+  const [redirectingTo, setRedirectingTo] = useState<string | null>(null);
 
   const profileRef = useMemoFirebase(() => {
     // Always fetch the admin's profile, regardless of who is visiting.
@@ -37,6 +41,11 @@ export default function Home() {
     { key: 'linkedinUrl', Icon: Linkedin, name: 'LinkedIn' },
     { key: 'twitterUrl', Icon: Twitter, name: 'Twitter' },
   ] as const;
+
+  const handleRedirect = (href: string) => {
+    setRedirectingTo(href);
+    router.push(href);
+  };
 
   if (isLoading) {
     return (
@@ -77,12 +86,23 @@ export default function Home() {
 
         <nav className="mt-8 flex flex-wrap justify-center gap-4">
           {navigationLinks.map((link) => (
-            <Button key={link.label} asChild variant="secondary" className="transition-transform hover:scale-105">
-              <Link href={link.href}>{link.label}</Link>
+            <Button 
+              key={link.href} 
+              variant="secondary" 
+              className="transition-transform hover:scale-105"
+              onClick={() => handleRedirect(link.href)}
+              disabled={redirectingTo === link.href}
+            >
+              {redirectingTo === link.href ? <Loader2 className="animate-spin" /> : link.label}
             </Button>
           ))}
-           <Button asChild variant="secondary" className="transition-transform hover:scale-105">
-            <Link href="/contact">Contact</Link>
+           <Button 
+            variant="secondary" 
+            className="transition-transform hover:scale-105"
+            onClick={() => handleRedirect('/contact')}
+            disabled={redirectingTo === '/contact'}
+          >
+            {redirectingTo === '/contact' ? <Loader2 className="animate-spin" /> : 'Contact'}
           </Button>
         </nav>
 
