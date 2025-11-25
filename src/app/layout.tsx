@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { cn } from '@/lib/utils';
 import './globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
+import { ModeToggle } from '@/components/mode-toggle';
 
 export const metadata: Metadata = {
   title: 'ProfileGrid',
@@ -13,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -22,7 +24,19 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={cn('font-body antialiased')}>{children}</body>
+      <body className={cn('font-body antialiased')}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <div className="fixed bottom-4 right-4 z-50">
+            <ModeToggle />
+          </div>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
