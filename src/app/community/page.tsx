@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CommunityTimeline } from "@/components/community-timeline";
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
