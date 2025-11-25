@@ -10,17 +10,13 @@ import type { Profile } from '@/lib/entities';
 export default function Home() {
   const { firestore, user } = useFirebase();
 
-  // Note: We are not validating which user's profile to show.
-  // In a real multi-user app, you would get the userId from the URL or session.
-  // For this portfolio, we'll assume a single user or a known user ID.
   const profileRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    // This is a placeholder. In a real app, you'd fetch the correct user's profile.
-    // We are temporarily hardcoding a user ID for demonstration.
-    // Replace 'eE8OivlqK2YI2gC2TWEi9BHNaf42' with the actual owner's user ID.
-    const profileOwnerUid = 'eE8OivlqK2YI2gC2TWEi9BHNaf42'; 
-    return doc(firestore, 'users', profileOwnerUid, 'profiles', 'main-profile');
-  }, [firestore]);
+    // Only construct the document reference if we have a user and firestore instance.
+    if (!user || !firestore) return null;
+    
+    // Fetch the profile for the currently logged-in user.
+    return doc(firestore, 'users', user.uid, 'profiles', 'main-profile');
+  }, [firestore, user]);
   
   const { data: profile, isLoading } = useDoc<Profile>(profileRef);
 
@@ -84,4 +80,3 @@ export default function Home() {
     </main>
   );
 }
-
