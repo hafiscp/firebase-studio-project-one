@@ -13,7 +13,8 @@ import { doc } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Profile } from '@/lib/entities';
 import { useRouter } from 'next/navigation';
-import { Textarea } from '@/components/ui/textarea';
+import { SlateEditor } from '@/components/slate-editor';
+import { Descendant } from 'slate';
 
 
 function HomeForm() {
@@ -99,6 +100,13 @@ function HomeForm() {
   );
 }
 
+const initialValue: Descendant[] = [
+  {
+    type: 'paragraph',
+    children: [{ text: 'This is the about page. You can edit this content in the admin dashboard.' }],
+  },
+]
+
 function AboutForm() {
   const { toast } = useToast();
   const { firestore, user } = useFirebase();
@@ -111,11 +119,16 @@ function AboutForm() {
 
   const { data: profileData, isLoading } = useDoc<Profile>(profileRef);
 
-  const [bio, setBio] = useState('');
+  const [bio, setBio] = useState<Descendant[]>(initialValue);
 
   useEffect(() => {
-    if (profileData) {
-      setBio(profileData.bio || '');
+    if (profileData?.bio) {
+        try {
+            const parsedBio = JSON.parse(profileData.bio);
+            setBio(parsedBio);
+        } catch (e) {
+            setBio([{ type: 'paragraph', children: [{ text: profileData.bio }] }]);
+        }
     }
   }, [profileData]);
 
@@ -128,7 +141,7 @@ function AboutForm() {
       });
       return;
     }
-    setDocumentNonBlocking(profileRef, { bio }, { merge: true });
+    setDocumentNonBlocking(profileRef, { bio: JSON.stringify(bio) }, { merge: true });
     toast({
       title: 'Success!',
       description: 'About page content has been updated.',
@@ -143,12 +156,12 @@ function AboutForm() {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium">About Page Content</h3>
-        <p className="text-sm text-muted-foreground">Update the content for your about page. You can use HTML for formatting.</p>
+        <p className="text-sm text-muted-foreground">Update the content for your about page.</p>
       </div>
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="bio">Bio</Label>
-          <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={10} />
+           <SlateEditor value={bio} onChange={setBio} />
         </div>
       </div>
       <Button onClick={handleSaveChanges}>Save Changes</Button>
