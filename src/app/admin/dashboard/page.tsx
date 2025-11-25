@@ -7,36 +7,62 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import data from '@/lib/cms-data.json';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDoc, useFirebase, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import type { Profile } from '@/lib/entities';
+import { useRouter } from 'next/navigation';
 
-// NOTE: This is a placeholder for a real CMS. 
-// In a real application, you would have a backend API to handle data persistence.
-// For this prototype, we are just mocking the "save" functionality.
 
 function HomeForm() {
   const { toast } = useToast();
-  const [profile, setProfile] = useState(data.profile);
-  const [socials, setSocials] = useState(data.contact.socials);
+  const { firestore, user } = useFirebase();
+  const profileId = 'main-profile';
 
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
-  };
+  const profileRef = useMemoFirebase(() => {
+    if (!user?.uid || !firestore) return null;
+    return doc(firestore, 'users', user.uid, 'profiles', profileId);
+  }, [user?.uid, firestore]);
 
-  const handleSocialChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSocials = [...socials];
-    newSocials[index] = { ...newSocials[index], [e.target.name]: e.target.value };
-    setSocials(newSocials);
-  };
+  const { data: profileData, isLoading } = useDoc<Profile>(profileRef);
+
+  const [name, setName] = useState('');
+  const [title, setTitle] = useState('');
+
+  useEffect(() => {
+    if (profileData) {
+      setName(profileData.fullName || '');
+      setTitle(profileData.title || '');
+    }
+  }, [profileData]);
 
   const handleSaveChanges = () => {
-    // In a real app, this would send a request to a backend API.
-    console.log('Saving changes:', { profile, socials });
+    if (!profileRef) {
+      toast({
+        variant: 'destructive',
+        title: 'Error!',
+        description: 'You must be logged in to save changes.',
+      });
+      return;
+    }
+
+    const updatedData: Partial<Profile> = {
+      fullName: name,
+      title: title,
+    };
+    
+    setDocumentNonBlocking(profileRef, updatedData, { merge: true });
+
     toast({
       title: 'Success!',
       description: 'Home page content has been updated.',
     });
   };
+  
+  if (isLoading) {
+    return <p>Loading profile...</p>
+  }
 
   return (
     <div className="space-y-6">
@@ -47,29 +73,12 @@ function HomeForm() {
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name">Headline (Name)</Label>
-          <Input id="name" name="name" value={profile.name} onChange={handleProfileChange} />
+          <Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="title">Sub-headline (Title)</Label>
-          <Input id="title" name="title" value={profile.title} onChange={handleProfileChange} />
+          <Input id="title" name="title" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
-      </div>
-      <div>
-        <h3 className="text-lg font-medium">Social Links</h3>
-        <p className="text-sm text-muted-foreground">Update your social media URLs.</p>
-      </div>
-      <div className="space-y-4">
-        {socials.map((social, index) => (
-          <div key={index} className="space-y-2">
-            <Label htmlFor={`social-url-${index}`}>{social.name} URL</Label>
-            <Input
-              id={`social-url-${index}`}
-              name="url"
-              value={social.url}
-              onChange={(e) => handleSocialChange(index, e)}
-            />
-          </div>
-        ))}
       </div>
       <Button onClick={handleSaveChanges}>Save Changes</Button>
     </div>
@@ -93,6 +102,22 @@ function PlaceholderTab({ title }: { title: string }) {
 }
 
 export default function AdminDashboardPage() {
+  const { user, isUserLoading } = useFirebase();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.replace('/admin');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || !user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p>Loading...</p>
+      </main>
+    );
+  }
   return (
     <main className="min-h-screen p-4 sm:p-6 lg:p-8 pt-20">
       <div className="mx-auto max-w-screen-2xl">

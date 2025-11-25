@@ -5,6 +5,8 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ModeToggle } from '@/components/mode-toggle';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export const metadata: Metadata = {
   title: 'ProfileGrid',
@@ -33,13 +35,16 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="relative min-h-screen">
-            <div className="absolute top-4 right-4 z-50">
-              <ModeToggle />
+          <FirebaseClientProvider>
+            <div className="relative min-h-screen">
+              <div className="absolute top-4 right-4 z-50">
+                <ModeToggle />
+              </div>
+              {children}
             </div>
-            {children}
-          </div>
-          <Toaster />
+            <Toaster />
+            <FirebaseErrorListener />
+          </FirebaseClientProvider>
         </ThemeProvider>
       </body>
     </html>

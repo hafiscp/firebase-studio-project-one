@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -8,36 +9,50 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
-
-// It's generally not recommended to add metadata directly in a 'use client' component
-// as it won't be available for server-side rendering. However, for a client-rendered
-// admin page, we can add it via a useEffect hook if needed, or rely on a robots.txt
-// for disallowing crawling. For now, we are creating a robots.txt.
-//
-// export const metadata: Metadata = {
-//   robots: {
-//     index: false,
-//     follow: false,
-//   },
-// };
+import { useAuth, useUser } from '@/firebase';
+import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
 
 export default function AdminLoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@example.com');
+  const [password, setPassword] = useState('@dmin123');
   const [error, setError] = useState('');
   const router = useRouter();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+
+  useEffect(() => {
+    if (user) {
+      router.push('/admin/dashboard');
+    }
+  }, [user, router]);
+
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === 'admin' && password === '@dmin123') {
-      setError('');
-      // In a real app, you'd set up a session or token.
-      // For this prototype, we'll just redirect.
-      router.push('/admin/dashboard');
-    } else {
-      setError('Invalid username or password.');
-    }
+    setError('');
+
+    if (email === 'admin' && password === '@dmin123') {
+       // In a real app, you'd set up a session or token.
+       // For this prototype, we'll just redirect.
+       // This is a mock login, and we will replace it with Firebase Auth.
+       initiateEmailSignIn(auth, 'admin@example.com', '@dmin123');
+     } else {
+       initiateEmailSignIn(auth, email, password);
+     }
   };
+  
+  if (isUserLoading) {
+    return (
+       <main className="flex min-h-screen items-center justify-center bg-background p-4">
+        <p>Loading...</p>
+      </main>
+    )
+  }
+  
+  if (user) {
+    return null; // Or a loading spinner, as the useEffect will redirect
+  }
+
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -54,8 +69,8 @@ export default function AdminLoginPage() {
                 id="username"
                 type="text"
                 placeholder="admin"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
