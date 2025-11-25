@@ -1,0 +1,164 @@
+/**
+ * This ruleset enforces a strict user-ownership model for a personal portfolio application.
+ *
+ * Core Philosophy:
+ * All user data is private and can only be accessed by the authenticated owner. This ensures
+ * data privacy and security by default.
+ *
+ * Data Structure:
+ * The entire data model is hierarchical, with all user-specific content nested under the path
+ * `/users/{userId}`. A user's main profile is at `/users/{userId}/profiles/{profileId}`,
+ * with related data like metrics, links, and tech stack items stored in subcollections.
+ *
+ * Key Security Decisions:
+ * - Strict Ownership: All read and write operations are gated by checking if the authenticated
+ *   user's UID matches the `{userId}` in the document path.
+ * - No User Listing: It is not possible to list all documents in the top-level `/users` collection,
+ *   preventing enumeration of all application users.
+ * - Path-Based Security: Authorization relies entirely on the document path, which is fast,
+ *   cost-effective, and avoids complex cross-document reads (`get()` calls).
+ * - Relational Integrity: On document creation, rules ensure that denormalized IDs (like `profileId`
+ *   in subcollections) match the parent document's ID, and these IDs are immutable upon update.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user's UID matches the provided userId.
+     * This is the primary function for enforcing data ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * A robust check for update and delete operations.
+     * Ensures the user is the owner AND the document actually exists.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * VALIDATION (CREATE): For a new Profile document, ensures the internal `id`
+     * field matches the document's ID from the path.
+     */
+    function isCreatingProfileWithMatchingId(profileId) {
+      return request.resource.data.id == profileId;
+    }
+
+    /**
+     * VALIDATION (UPDATE): Enforces immutability of the Profile's `id` field.
+     */
+    function isProfileIdImmutable() {
+      return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * VALIDATION (CREATE): For new subcollection items, ensures the denormalized
+     * `profileId` field matches the parent Profile's ID from the path.
+     */
+    function isCreatingChildWithMatchingProfileId(profileId) {
+      return request.resource.data.profileId == profileId;
+    }
+
+    /**
+     * VALIDATION (UPDATE): Enforces immutability of a subcollection item's
+     * `profileId` field, preventing it from being re-parented.
+     */
+    function isChildProfileIdImmutable() {
+      return request.resource.data.profileId == resource.data.profileId;
+    }
+
+    // ------------------------------------------------------------------------
+    // Collection Rules
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Manages user profile documents.
+     * @path /users/{userId}/profiles/{profileId}
+     * @allow A user (uid: 'user_abc') can read, create, update, and delete their own profile at `/users/user_abc/profiles/profile_123`.
+     * @deny A different user (uid: 'user_xyz') is denied all access to `/users/user_abc/profiles/profile_123`.
+     * @principle Restricts access to a user's own data tree and validates relational integrity on create/update.
+     */
+    match /users/{userId}/profiles/{profileId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isCreatingProfileWithMatchingId(profileId);
+      allow update: if isExistingOwner(userId) && isProfileIdImmutable();
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Manages key metrics for a user's profile.
+       * @path /users/{userId}/profiles/{profileId}/keyMetrics/{keyMetricId}
+       * @allow User 'user_abc' can (create) a key metric at `/users/user_abc/profiles/p1/keyMetrics/km1` if the metric data includes `profileId: 'p1'`.
+       * @deny User 'user_abc' is denied (create) if the key metric data has a mismatched `profileId: 'p2'`.
+       * @principle Enforces document ownership via path and ensures data consistency with the parent profile.
+       */
+      match /keyMetrics/{keyMetricId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isCreatingChildWithMatchingProfileId(profileId);
+        allow update: if isExistingOwner(userId) && isChildProfileIdImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Manages navigation links for a user's profile.
+       * @path /users/{userId}/profiles/{profileId}/navigationLinks/{navigationLinkId}
+       * @allow User 'user_abc' can (create) a link at `/users/user_abc/profiles/p1/navigationLinks/nl1` if the link data includes `profileId: 'p1'`.
+       * @deny User 'user_xyz' is denied all access to any navigation links under user 'user_abc'.
+       * @principle Enforces document ownership via path and ensures data consistency with the parent profile.
+       */
+      match /navigationLinks/{navigationLinkId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isCreatingChildWithMatchingProfileId(profileId);
+        allow update: if isExistingOwner(userId) && isChildProfileIdImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Manages tech stack items for a user's profile.
+       * @path /users/{userId}/profiles/{profileId}/techStackItems/{techStackItemId}
+       * @allow User 'user_abc' can (update) their own tech stack item at `/users/user_abc/profiles/p1/techStackItems/ts1`.
+       * @deny User 'user_abc' cannot (update) the item if they try to change the immutable `profileId` field.
+       * @principle Enforces document ownership via path and ensures data consistency with the parent profile.
+       */
+      match /techStackItems/{techStackItemId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isCreatingChildWithMatchingProfileId(profileId);
+        allow update: if isExistingOwner(userId) && isChildProfileIdImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Manages contact methods for a user's profile.
+       * @path /users/{userId}/profiles/{profileId}/contactMethods/{contactMethodId}
+       * @allow User 'user_abc' can (delete) their own contact method at `/users/user_abc/profiles/p1/contactMethods/cm1`.
+       * @deny User 'user_xyz' cannot (delete) a contact method belonging to 'user_abc'.
+       * @principle Enforces document ownership via path and ensures data consistency with the parent profile.
+       */
+      match /contactMethods/{contactMethodId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isCreatingChildWithMatchingProfileId(profileId);
+        allow update: if isExistingOwner(userId) && isChildProfileIdImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+  }
+}

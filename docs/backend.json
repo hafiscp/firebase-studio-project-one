@@ -1,0 +1,325 @@
+{
+  "entities": {
+    "Profile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Profile",
+      "type": "object",
+      "description": "Represents the user's profile information for the portfolio.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Profile entity."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The full name of the user."
+        },
+        "title": {
+          "type": "string",
+          "description": "The professional title of the user (e.g., Software Engineer)."
+        },
+        "bio": {
+          "type": "string",
+          "description": "A brief biography or personal statement."
+        },
+        "location": {
+          "type": "string",
+          "description": "The location of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user.",
+          "format": "email"
+        },
+        "githubUrl": {
+          "type": "string",
+          "description": "URL to the user's GitHub profile.",
+          "format": "uri"
+        },
+        "linkedinUrl": {
+          "type": "string",
+          "description": "URL to the user's LinkedIn profile.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "fullName",
+        "title",
+        "bio",
+        "location",
+        "email"
+      ]
+    },
+    "KeyMetric": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "KeyMetric",
+      "type": "object",
+      "description": "Represents a key metric or achievement to highlight.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the KeyMetric entity."
+        },
+        "profileId": {
+          "type": "string",
+          "description": "Reference to Profile. (Relationship: Profile 1:N KeyMetric)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the key metric (e.g., Projects Completed)."
+        },
+        "value": {
+          "type": "number",
+          "description": "The numerical value of the key metric."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description or context for the key metric."
+        }
+      },
+      "required": [
+        "id",
+        "profileId",
+        "title",
+        "value",
+        "description"
+      ]
+    },
+    "NavigationLink": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "NavigationLink",
+      "type": "object",
+      "description": "Represents a navigation link within the portfolio.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the NavigationLink entity."
+        },
+        "profileId": {
+          "type": "string",
+          "description": "Reference to Profile. (Relationship: Profile 1:N NavigationLink)"
+        },
+        "label": {
+          "type": "string",
+          "description": "The label for the navigation link (e.g., Story)."
+        },
+        "url": {
+          "type": "string",
+          "description": "The URL the navigation link points to.",
+          "format": "uri"
+        },
+        "order": {
+          "type": "number",
+          "description": "The order in which the link should appear in the navigation."
+        }
+      },
+      "required": [
+        "id",
+        "profileId",
+        "label",
+        "url",
+        "order"
+      ]
+    },
+    "TechStackItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TechStackItem",
+      "type": "object",
+      "description": "Represents a technology or tool in the user's tech stack.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the TechStackItem entity."
+        },
+        "profileId": {
+          "type": "string",
+          "description": "Reference to Profile. (Relationship: Profile 1:N TechStackItem)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the technology or tool (e.g., React, Node.js)."
+        },
+        "iconUrl": {
+          "type": "string",
+          "description": "URL to an icon representing the technology or tool.",
+          "format": "uri"
+        },
+        "proficiency": {
+          "type": "string",
+          "description": "The proficiency level (e.g., Beginner, Intermediate, Expert)."
+        }
+      },
+      "required": [
+        "id",
+        "profileId",
+        "name",
+        "iconUrl",
+        "proficiency"
+      ]
+    },
+    "ContactMethod": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactMethod",
+      "type": "object",
+      "description": "Represents a method for users to contact the profile owner.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ContactMethod entity."
+        },
+        "profileId": {
+          "type": "string",
+          "description": "Reference to Profile. (Relationship: Profile 1:N ContactMethod)"
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of contact method (e.g., email, twitter, linkedin)."
+        },
+        "url": {
+          "type": "string",
+          "description": "The URL or address for the contact method.",
+          "format": "uri"
+        },
+        "label": {
+          "type": "string",
+          "description": "A label or display name for the contact method."
+        }
+      },
+      "required": [
+        "id",
+        "profileId",
+        "type",
+        "url",
+        "label"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/profiles/{profileId}",
+        "definition": {
+          "entityName": "Profile",
+          "schema": {
+            "$ref": "#/backend/entities/Profile"
+          },
+          "description": "Stores user profile information. Only the user with the matching {userId} can access and modify their profile.  The {profileId} is required to prevent collisions.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "profileId",
+              "description": "The unique identifier of the profile."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/profiles/{profileId}/keyMetrics/{keyMetricId}",
+        "definition": {
+          "entityName": "KeyMetric",
+          "schema": {
+            "$ref": "#/backend/entities/KeyMetric"
+          },
+          "description": "Stores key metrics associated with a user's profile. Only the user with the matching {userId} can access and modify their key metrics. Includes denormalized 'profileId' to maintain data consistency.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "profileId",
+              "description": "The unique identifier of the profile."
+            },
+            {
+              "name": "keyMetricId",
+              "description": "The unique identifier of the key metric."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/profiles/{profileId}/navigationLinks/{navigationLinkId}",
+        "definition": {
+          "entityName": "NavigationLink",
+          "schema": {
+            "$ref": "#/backend/entities/NavigationLink"
+          },
+          "description": "Stores navigation links associated with a user's profile. Only the user with the matching {userId} can access and modify their navigation links. Includes denormalized 'profileId' to maintain data consistency.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "profileId",
+              "description": "The unique identifier of the profile."
+            },
+            {
+              "name": "navigationLinkId",
+              "description": "The unique identifier of the navigation link."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/profiles/{profileId}/techStackItems/{techStackItemId}",
+        "definition": {
+          "entityName": "TechStackItem",
+          "schema": {
+            "$ref": "#/backend/entities/TechStackItem"
+          },
+          "description": "Stores tech stack items associated with a user's profile. Only the user with the matching {userId} can access and modify their tech stack items. Includes denormalized 'profileId' to maintain data consistency.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "profileId",
+              "description": "The unique identifier of the profile."
+            },
+            {
+              "name": "techStackItemId",
+              "description": "The unique identifier of the tech stack item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/profiles/{profileId}/contactMethods/{contactMethodId}",
+        "definition": {
+          "entityName": "ContactMethod",
+          "schema": {
+            "$ref": "#/backend/entities/ContactMethod"
+          },
+          "description": "Stores contact methods associated with a user's profile. Only the user with the matching {userId} can access and modify their contact methods. Includes denormalized 'profileId' to maintain data consistency.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "profileId",
+              "description": "The unique identifier of the profile."
+            },
+            {
+              "name": "contactMethodId",
+              "description": "The unique identifier of the contact method."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to store user profile information and related data for the ProfileGrid application. It leverages path-based ownership for user profiles and their associated data (key metrics, navigation links, tech stack items, and contact methods). This structure ensures that only the authenticated user can access and modify their own data, simplifying security rules and enhancing data privacy.\n\n**Authorization Independence:** Achieved by using path-based ownership (`/users/{userId}/profiles/{profileId}`) and avoiding `get()` calls in security rules.  All subcollections (keyMetrics, navigationLinks, techStackItems, contactMethods) are nested under the user's profile, eliminating the need to fetch parent document data for authorization. The `profileId` is also included in all subcollections to ensure the integrity of the data.\n\n**QAPs (Rules are not Filters):** The structure facilitates secure list operations because each collection is secured by the user's `uid` and all collections share the same security posture. Listing key metrics, navigation links, tech stack items, and contact methods under a user's profile only returns the data associated with that user. The design includes structural segregation to enforce homogeneous security posture, which will allow for more efficient and safer rules."
+  }
+}
