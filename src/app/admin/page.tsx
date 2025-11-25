@@ -10,10 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
 import { useAuth, useUser } from '@/firebase';
-import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+
+// The actual Firebase admin email. This is used behind the scenes.
+const ADMIN_EMAIL = 'cphafis2@gmail.com';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('admin@example.com');
+  const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('@dmin123');
   const [error, setError] = useState('');
   const router = useRouter();
@@ -31,14 +34,19 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError('');
 
-    if (email === 'admin' && password === '@dmin123') {
-       // In a real app, you'd set up a session or token.
-       // For this prototype, we'll just redirect.
-       // This is a mock login, and we will replace it with Firebase Auth.
-       initiateEmailSignIn(auth, 'admin@example.com', '@dmin123');
-     } else {
-       initiateEmailSignIn(auth, email, password);
-     }
+    // Check for the simple username and password provided by the user.
+    if (username === 'admin' && password === '@dmin123') {
+      // If they match, use the actual Firebase credentials to sign in.
+      signInWithEmailAndPassword(auth, ADMIN_EMAIL, password)
+        .catch((err) => {
+           // This might happen if the password is wrong or the user was deleted.
+           console.error("Firebase sign-in error:", err);
+           setError('An unexpected error occurred during login.');
+        });
+    } else {
+      // If the credentials don't match, show an error.
+      setError('Invalid credentials. Please try again.');
+    }
   };
   
   if (isUserLoading) {
@@ -69,8 +77,8 @@ export default function AdminLoginPage() {
                 id="username"
                 type="text"
                 placeholder="admin"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
