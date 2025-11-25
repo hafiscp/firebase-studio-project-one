@@ -18,7 +18,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, PlusCircle } from 'lucide-react';
+import { GripVertical, Trash2, PlusCircle, Save } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 function HomeForm() {
@@ -170,16 +170,29 @@ function AboutForm() {
 
 type SortableContributionItemProps = {
   item: Contribution;
-  onUpdate: (id: string, field: keyof Contribution, value: string) => void;
+  onSave: (id: string, data: Pick<Contribution, 'heading' | 'date' | 'content'>) => void;
   onDelete: (id: string) => void;
 };
 
-function SortableContributionItem({ item, onUpdate, onDelete }: SortableContributionItemProps) {
+function SortableContributionItem({ item, onSave, onDelete }: SortableContributionItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
+  const [heading, setHeading] = useState(item.heading);
+  const [date, setDate] = useState(item.date);
+  const [content, setContent] = useState(item.content);
+
+  useEffect(() => {
+    setHeading(item.heading);
+    setDate(item.date);
+    setContent(item.content);
+  }, [item]);
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+  };
+
+  const handleSave = () => {
+    onSave(item.id, { heading, date, content });
   };
 
   return (
@@ -189,12 +202,12 @@ function SortableContributionItem({ item, onUpdate, onDelete }: SortableContribu
       </div>
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value={item.id} className="border-b-0">
-          <AccordionTrigger className="hover:no-underline">
-            <Input
-              value={item.heading}
-              onChange={(e) => onUpdate(item.id, 'heading', e.target.value)}
-              className="text-lg font-medium border-none shadow-none focus-visible:ring-0"
-              onClick={(e) => e.stopPropagation()}
+          <AccordionTrigger className="hover:no-underline p-0">
+             <Input
+                value={heading}
+                onChange={(e) => setHeading(e.target.value)}
+                className="text-lg font-medium border-none shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0"
+                onClick={(e) => e.stopPropagation()}
             />
           </AccordionTrigger>
           <AccordionContent className="pt-4 space-y-4">
@@ -202,35 +215,38 @@ function SortableContributionItem({ item, onUpdate, onDelete }: SortableContribu
               <Label>Date</Label>
               <Input
                 type="date"
-                value={item.date}
-                onChange={(e) => onUpdate(item.id, 'date', e.target.value)}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label>Content</Label>
               <Textarea
-                value={item.content}
-                onChange={(e) => onUpdate(item.id, 'content', e.target.value)}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
                 rows={5}
               />
             </div>
-             <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete the contribution: "{item.heading}". This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDelete(item.id)}>Continue</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+             <div className="flex gap-2">
+                <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save</Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete the contribution: "{item.heading}". This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => onDelete(item.id)}>Continue</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
@@ -275,13 +291,14 @@ function ContributionsForm() {
         addDocumentNonBlocking(contributionsCollectionRef, newContribution);
     };
     
-    const handleUpdateContribution = (id: string, field: keyof Contribution, value: string) => {
-      const updatedItems = items.map(item => item.id === id ? { ...item, [field]: value } : item);
-      setItems(updatedItems);
-      
+    const handleSaveContribution = (id: string, data: Pick<Contribution, 'heading' | 'date' | 'content'>) => {
       if (!contributionsCollectionRef) return;
       const docRef = doc(contributionsCollectionRef, id);
-      setDocumentNonBlocking(docRef, { [field]: value }, { merge: true });
+      setDocumentNonBlocking(docRef, data, { merge: true });
+      toast({
+          title: "Contribution Saved!",
+          description: `Changes to "${data.heading}" have been saved.`,
+      });
     };
 
     const handleDeleteContribution = (id: string) => {
@@ -300,10 +317,10 @@ function ContributionsForm() {
             
             setItems(newItems);
             
-            if (!firestore) return;
+            if (!firestore || !user) return;
             const batch = writeBatch(firestore);
             newItems.forEach((item, index) => {
-                const docRef = doc(firestore, `users/${user?.uid}/profiles/${profileId}/contributions`, item.id);
+                const docRef = doc(firestore, `users/${user.uid}/profiles/${profileId}/contributions`, item.id);
                 batch.update(docRef, { order: index });
             });
             await batch.commit();
@@ -332,7 +349,7 @@ function ContributionsForm() {
                             <SortableContributionItem 
                               key={item.id} 
                               item={item} 
-                              onUpdate={handleUpdateContribution}
+                              onSave={handleSaveContribution}
                               onDelete={handleDeleteContribution}
                             />
                         ))}
@@ -415,5 +432,7 @@ export default function AdminDashboardPage() {
     </main>
   );
 }
+
+    
 
     
