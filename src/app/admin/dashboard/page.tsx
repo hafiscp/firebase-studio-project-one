@@ -372,17 +372,17 @@ function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItem
   const [role, setRole] = useState(item.role ?? '');
   const [communityName, setCommunityName] = useState(item.communityName ?? '');
   const [description, setDescription] = useState(item.description ?? '');
-  const [startDate, setStartDate] = useState(item.startDate);
+  const [startDate, setStartDate] = useState(item.startDate ?? '');
   const [endDate, setEndDate] = useState(item.endDate ?? '');
-  const [isCurrent, setIsCurrent] = useState(item.isCurrent);
+  const [isCurrent, setIsCurrent] = useState(item.isCurrent ?? false);
 
   useEffect(() => {
     setRole(item.role ?? '');
     setCommunityName(item.communityName ?? '');
     setDescription(item.description ?? '');
-    setStartDate(item.startDate);
+    setStartDate(item.startDate ?? '');
     setEndDate(item.endDate ?? '');
-    setIsCurrent(item.isCurrent);
+    setIsCurrent(item.isCurrent ?? false);
   }, [item]);
 
   const style = {
@@ -667,5 +667,7 @@ export default function AdminDashboardPage() {
     </main>
   );
 }
+
+    
 
     
