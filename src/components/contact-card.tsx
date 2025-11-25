@@ -11,7 +11,7 @@ import { doc } from 'firebase/firestore';
 import type { Profile } from '@/lib/entities';
 
 // This should be the UID of the admin user who manages the content.
-const ADMIN_USER_ID = 'arxO7bMR0vPj8KeHwyHExv2h5vz2';
+const ADMIN_USER_ID = 'R24RFjVJTyd3R5aHbZOJweN62uw1';
 
 type ContactCardProps = React.HTMLAttributes<HTMLDivElement>;
 

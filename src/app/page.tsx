@@ -14,7 +14,7 @@ import '@/components/liquid-background.css';
 
 // This should be the UID of the admin user who manages the content.
 // This allows any visitor to view the admin's portfolio content.
-const ADMIN_USER_ID = 'arxO7bMR0vPj8KeHwyHExv2h5vz2';
+const ADMIN_USER_ID = 'R24RFjVJTyd3R5aHbZOJweN62uw1';
 
 export default function Home() {
   const { firestore } = useFirebase();

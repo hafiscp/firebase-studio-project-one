@@ -8,7 +8,7 @@ import type { Profile } from '@/lib/entities';
 import { Loader2 } from "lucide-react";
 
 // This should be the UID of the admin user who manages the content.
-const ADMIN_USER_ID = 'arxO7bMR0vPj8KeHwyHExv2h5vz2';
+const ADMIN_USER_ID = 'R24RFjVJTyd3R5aHbZOJweN62uw1';
 
 export default function AboutPage() {
   const { firestore } = useFirebase();
