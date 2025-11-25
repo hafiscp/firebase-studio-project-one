@@ -235,6 +235,52 @@
         "content",
         "order"
       ]
+    },
+    "CommunityInvolvement": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CommunityInvolvement",
+      "type": "object",
+      "description": "Represents a user's involvement in a community.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the CommunityInvolvement entity."
+        },
+        "profileId": {
+          "type": "string",
+          "description": "Reference to Profile. (Relationship: Profile 1:N CommunityInvolvement)"
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role in the community."
+        },
+        "communityName": {
+          "type": "string",
+          "description": "The name of the community."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the involvement."
+        },
+        "date": {
+          "type": "string",
+          "description": "The date of the involvement (e.g., YYYY-MM).",
+          "format": "date"
+        },
+        "order": {
+          "type": "number",
+          "description": "The order in which the involvement should appear."
+        }
+      },
+      "required": [
+        "id",
+        "profileId",
+        "role",
+        "communityName",
+        "description",
+        "date",
+        "order"
+      ]
     }
   },
   "auth": {
@@ -381,6 +427,30 @@
             {
               "name": "contributionId",
               "description": "The unique identifier of the contribution."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/profiles/{profileId}/communityInvolvements/{communityInvolvementId}",
+        "definition": {
+          "entityName": "CommunityInvolvement",
+          "schema": {
+            "$ref": "#/backend/entities/CommunityInvolvement"
+          },
+          "description": "Stores community involvements associated with a user's profile. Only the user with the matching {userId} can access and modify their community involvements. Includes denormalized 'profileId' to maintain data consistency.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "profileId",
+              "description": "The unique identifier of the profile."
+            },
+            {
+              "name": "communityInvolvementId",
+              "description": "The unique identifier of the community involvement."
             }
           ]
         }

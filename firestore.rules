@@ -171,6 +171,20 @@ service cloud.firestore {
         allow update: if isExistingOwner(userId) && isChildProfileIdImmutable();
         allow delete: if isExistingOwner(userId);
       }
+
+      /**
+       * @description Manages community involvements for a user's profile.
+       * @path /users/{userId}/profiles/{profileId}/communityInvolvements/{communityInvolvementId}
+       * @allow Anyone can read community involvements. Only the owner can write.
+       * @principle Enforces public read and owner-only writes, plus data consistency.
+       */
+      match /communityInvolvements/{communityInvolvementId} {
+        allow get: if true;
+        allow list: if true;
+        allow create: if isOwner(userId) && isCreatingChildWithMatchingProfileId(profileId);
+        allow update: if isExistingOwner(userId) && isChildProfileIdImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
     }
   }
 }

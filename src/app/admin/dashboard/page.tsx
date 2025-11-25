@@ -11,7 +11,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useCollection, useDoc, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, doc, writeBatch, query, orderBy } from 'firebase/firestore';
 import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import type { Profile, Contribution } from '@/lib/entities';
+import type { Profile, Contribution, CommunityInvolvement } from '@/lib/entities';
 import { useRouter } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -360,6 +360,206 @@ function ContributionsForm() {
     );
 }
 
+type SortableCommunityItemProps = {
+  item: CommunityInvolvement;
+  onSave: (id: string, data: Pick<CommunityInvolvement, 'role' | 'communityName' | 'description' | 'date'>) => void;
+  onDelete: (id: string) => void;
+};
+
+function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
+  const [role, setRole] = useState(item.role);
+  const [communityName, setCommunityName] = useState(item.communityName);
+  const [description, setDescription] = useState(item.description);
+  const [date, setDate] = useState(item.date);
+
+  useEffect(() => {
+    setRole(item.role);
+    setCommunityName(item.communityName);
+    setDescription(item.description);
+    setDate(item.date);
+  }, [item]);
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const handleSave = () => {
+    onSave(item.id, { role, communityName, description, date });
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="bg-card p-4 rounded-lg border flex items-center gap-4">
+      <div {...attributes} {...listeners} className="cursor-grab p-2">
+        <GripVertical className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value={item.id} className="border-b-0">
+          <AccordionTrigger className="hover:no-underline p-0">
+            <Input
+              value={communityName}
+              onChange={(e) => setCommunityName(e.target.value)}
+              className="text-lg font-medium border-none shadow-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </AccordionTrigger>
+          <AccordionContent className="pt-4 space-y-4">
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Input value={role} onChange={(e) => setRole(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Date (YYYY-MM)</Label>
+              <Input
+                type="month"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save</Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete the involvement: "{item.communityName}". This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDelete(item.id)}>Continue</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  );
+}
+
+function CommunityForm() {
+  const { toast } = useToast();
+  const { firestore, user } = useFirebase();
+  const profileId = 'main-profile';
+
+  const communityCollectionRef = useMemoFirebase(() => {
+    if (!user?.uid || !firestore) return null;
+    return collection(firestore, 'users', user.uid, 'profiles', profileId, 'communityInvolvements');
+  }, [user?.uid, firestore]);
+
+  const communityQuery = useMemoFirebase(() => {
+    if (!communityCollectionRef) return null;
+    return query(communityCollectionRef, orderBy('order'));
+  }, [communityCollectionRef]);
+
+  const { data: communityData, isLoading } = useCollection<CommunityInvolvement>(communityQuery);
+  const [items, setItems] = useState<CommunityInvolvement[]>([]);
+
+  useEffect(() => {
+    if (communityData) {
+      setItems(communityData);
+    }
+  }, [communityData]);
+
+  const handleCreateItem = () => {
+    if (!communityCollectionRef || !user) return;
+    const newOrder = items.length > 0 ? Math.max(...items.map(i => i.order)) + 1 : 0;
+    const newItem: Omit<CommunityInvolvement, 'id'> = {
+      profileId: profileId,
+      communityName: 'New Community Involvement',
+      role: 'Role',
+      date: new Date().toISOString().slice(0, 7), // YYYY-MM
+      description: '',
+      order: newOrder,
+    };
+    addDocumentNonBlocking(communityCollectionRef, newItem);
+  };
+
+  const handleSaveItem = (id: string, data: Pick<CommunityInvolvement, 'role' | 'communityName' | 'description' | 'date'>) => {
+    if (!communityCollectionRef) return;
+    const docRef = doc(communityCollectionRef, id);
+    setDocumentNonBlocking(docRef, data, { merge: true });
+    toast({
+      title: "Community Involvement Saved!",
+      description: `Changes to "${data.communityName}" have been saved.`,
+    });
+  };
+
+  const handleDeleteItem = (id: string) => {
+    if (!communityCollectionRef) return;
+    const docRef = doc(communityCollectionRef, id);
+    deleteDocumentNonBlocking(docRef);
+    toast({ title: "Success!", description: "Community involvement has been deleted." });
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      const oldIndex = items.findIndex((item) => item.id === active.id);
+      const newIndex = items.findIndex((item) => item.id === over!.id);
+      const newItems = arrayMove(items, oldIndex, newIndex);
+
+      setItems(newItems);
+
+      if (!firestore || !user) return;
+      const batch = writeBatch(firestore);
+      newItems.forEach((item, index) => {
+        const docRef = doc(firestore, `users/${user.uid}/profiles/${profileId}/communityInvolvements`, item.id);
+        batch.update(docRef, { order: index });
+      });
+      await batch.commit();
+      toast({ title: "Success!", description: "Community involvement order has been updated." });
+    }
+  };
+
+  if (isLoading) {
+    return <p>Loading community involvements...</p>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-medium">Community Page</h3>
+          <p className="text-sm text-muted-foreground">Manage your community involvements.</p>
+        </div>
+        <Button onClick={handleCreateItem}><PlusCircle className="mr-2 h-4 w-4" /> Create New</Button>
+      </div>
+
+      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-4">
+            {items.map(item => (
+              <SortableCommunityItem
+                key={item.id}
+                item={item}
+                onSave={handleSaveItem}
+                onDelete={handleDeleteItem}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+}
+
+
 function PlaceholderTab({ title }: { title: string }) {
   return (
     <Card>
@@ -420,7 +620,7 @@ export default function AdminDashboardPage() {
                  <ContributionsForm />
               </TabsContent>
               <TabsContent value="community" className="pt-6">
-                 <PlaceholderTab title="Community Page" />
+                 <CommunityForm />
               </TabsContent>
               <TabsContent value="contact" className="pt-6">
                  <PlaceholderTab title="Contact Page" />
@@ -432,7 +632,3 @@ export default function AdminDashboardPage() {
     </main>
   );
 }
-
-    
-
-    

@@ -50,3 +50,13 @@ export type Contribution = {
     content: string;
     order: number;
 };
+
+export type CommunityInvolvement = {
+    id: string;
+    profileId: string;
+    role: string;
+    communityName: string;
+    description: string;
+    date: string;
+    order: number;
+};
