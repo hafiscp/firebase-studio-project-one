@@ -55,11 +55,11 @@ export default function Home() {
 
         <nav className="mt-8 flex flex-wrap justify-center gap-4">
           {navigationLinks.map((link) => (
-            <Button key={link.label} asChild variant="ghost">
+            <Button key={link.label} asChild variant="secondary">
               <Link href={link.href}>{link.label}</Link>
             </Button>
           ))}
-           <Button asChild variant="ghost">
+           <Button asChild variant="secondary">
             <Link href="/contact">Contact</Link>
           </Button>
         </nav>
