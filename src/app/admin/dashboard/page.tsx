@@ -20,6 +20,7 @@ import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } 
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash2, PlusCircle, Save } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 
 function HomeForm() {
   const { toast } = useToast();
@@ -362,7 +363,7 @@ function ContributionsForm() {
 
 type SortableCommunityItemProps = {
   item: CommunityInvolvement;
-  onSave: (id: string, data: Pick<CommunityInvolvement, 'role' | 'communityName' | 'description' | 'date'>) => void;
+  onSave: (id: string, data: Partial<CommunityInvolvement>) => void;
   onDelete: (id: string) => void;
 };
 
@@ -371,13 +372,17 @@ function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItem
   const [role, setRole] = useState(item.role);
   const [communityName, setCommunityName] = useState(item.communityName);
   const [description, setDescription] = useState(item.description);
-  const [date, setDate] = useState(item.date);
+  const [startDate, setStartDate] = useState(item.startDate);
+  const [endDate, setEndDate] = useState(item.endDate ?? '');
+  const [isCurrent, setIsCurrent] = useState(item.isCurrent);
 
   useEffect(() => {
     setRole(item.role);
     setCommunityName(item.communityName);
     setDescription(item.description);
-    setDate(item.date);
+    setStartDate(item.startDate);
+    setEndDate(item.endDate ?? '');
+    setIsCurrent(item.isCurrent);
   }, [item]);
 
   const style = {
@@ -386,7 +391,15 @@ function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItem
   };
 
   const handleSave = () => {
-    onSave(item.id, { role, communityName, description, date });
+    const dataToSave: Partial<CommunityInvolvement> = {
+      role,
+      communityName,
+      description,
+      startDate,
+      isCurrent,
+      endDate: isCurrent ? null : endDate,
+    };
+    onSave(item.id, dataToSave);
   };
 
   return (
@@ -409,13 +422,33 @@ function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItem
               <Label>Role</Label>
               <Input value={role} onChange={(e) => setRole(e.target.value)} />
             </div>
-            <div className="space-y-2">
-              <Label>Date (YYYY-MM)</Label>
-              <Input
-                type="month"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label>Start Date</Label>
+                    <Input
+                        type="month"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label>End Date</Label>
+                    <Input
+                        type="month"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        disabled={isCurrent}
+                    />
+                </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox id={`current-${item.id}`} checked={isCurrent} onCheckedChange={(checked) => setIsCurrent(Boolean(checked))} />
+              <label
+                htmlFor={`current-${item.id}`}
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                I currently hold this role
+              </label>
             </div>
             <div className="space-y-2">
               <Label>Description</Label>
@@ -483,14 +516,16 @@ function CommunityForm() {
       profileId: profileId,
       communityName: 'New Community Involvement',
       role: 'Role',
-      date: new Date().toISOString().slice(0, 7), // YYYY-MM
+      startDate: new Date().toISOString().slice(0, 7), // YYYY-MM
+      endDate: null,
+      isCurrent: true,
       description: '',
       order: newOrder,
     };
     addDocumentNonBlocking(communityCollectionRef, newItem);
   };
 
-  const handleSaveItem = (id: string, data: Pick<CommunityInvolvement, 'role' | 'communityName' | 'description' | 'date'>) => {
+  const handleSaveItem = (id: string, data: Partial<CommunityInvolvement>) => {
     if (!communityCollectionRef) return;
     const docRef = doc(communityCollectionRef, id);
     setDocumentNonBlocking(docRef, data, { merge: true });

@@ -24,7 +24,7 @@ export default function CommunityPage() {
   const communityQuery = useMemoFirebase(() => {
     if (!communityCollectionRef) return null;
     // Sort by order which is managed by drag-and-drop in admin
-    // To sort by date: return query(communityCollectionRef, orderBy('date', 'desc'));
+    // To sort by date: return query(communityCollectionRef, orderBy('startDate', 'desc'));
     return query(communityCollectionRef, orderBy('order'));
   }, [communityCollectionRef]);
 
@@ -33,7 +33,7 @@ export default function CommunityPage() {
   const sortedInvolvements = useMemo(() => {
     if (!communityInvolvements) return [];
     // Secondary sort by date on the client-side to ensure latest is first
-    return [...communityInvolvements].sort((a, b) => b.date.localeCompare(a.date));
+    return [...communityInvolvements].sort((a, b) => b.startDate.localeCompare(a.startDate));
   }, [communityInvolvements]);
 
 

@@ -57,6 +57,8 @@ export type CommunityInvolvement = {
     role: string;
     communityName: string;
     description: string;
-    date: string;
+    startDate: string;
+    endDate: string | null;
+    isCurrent: boolean;
     order: number;
 };

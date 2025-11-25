@@ -11,6 +11,18 @@ type CommunityTimelineProps = {
   items: CommunityInvolvement[];
 };
 
+function formatDateRange(startDate: string, endDate: string | null, isCurrent: boolean) {
+    const start = format(new Date(`${startDate}-02`), 'MMM yyyy');
+    if (isCurrent) {
+        return `${start} - Present`;
+    }
+    if (endDate) {
+        const end = format(new Date(`${endDate}-02`), 'MMM yyyy');
+        return `${start} - ${end}`;
+    }
+    return start;
+}
+
 export function CommunityTimeline({ items }: CommunityTimelineProps) {
   return (
     <div className="relative pl-8">
@@ -21,7 +33,7 @@ export function CommunityTimeline({ items }: CommunityTimelineProps) {
         {items.map((item) => (
           <div key={item.id} className="relative flex items-start">
             {/* Dot on the timeline */}
-            <div className="absolute left-0 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+            <div className="absolute left-0 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary -translate-x-1/2">
               <Users className="h-4 w-4 text-primary-foreground" />
             </div>
 
@@ -29,7 +41,7 @@ export function CommunityTimeline({ items }: CommunityTimelineProps) {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                     <CardTitle>{item.communityName}</CardTitle>
-                    <Badge variant="outline">{format(new Date(`${item.date}-02`), 'MMMM yyyy')}</Badge>
+                    <Badge variant="outline">{formatDateRange(item.startDate, item.endDate, item.isCurrent)}</Badge>
                 </div>
                 <CardDescription>{item.role}</CardDescription>
               </CardHeader>

@@ -262,10 +262,19 @@
           "type": "string",
           "description": "A description of the involvement."
         },
-        "date": {
+        "startDate": {
           "type": "string",
-          "description": "The date of the involvement (e.g., YYYY-MM).",
+          "description": "The start date of the involvement (e.g., YYYY-MM).",
           "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The end date of the involvement (e.g., YYYY-MM). Null if current.",
+          "format": "date"
+        },
+        "isCurrent": {
+          "type": "boolean",
+          "description": "True if the user currently holds this role."
         },
         "order": {
           "type": "number",
@@ -278,7 +287,8 @@
         "role",
         "communityName",
         "description",
-        "date",
+        "startDate",
+        "isCurrent",
         "order"
       ]
     }
