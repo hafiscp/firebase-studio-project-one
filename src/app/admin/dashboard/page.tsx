@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +37,7 @@ function HomeForm() {
   }, [profileData]);
 
   const handleSaveChanges = () => {
-    if (!profileRef) {
+    if (!profileRef || !user) {
       toast({
         variant: 'destructive',
         title: 'Error!',
@@ -47,10 +46,25 @@ function HomeForm() {
       return;
     }
 
-    const updatedData: Partial<Profile> = {
-      fullName: name,
-      title: title,
-    };
+    let updatedData: Partial<Profile>;
+
+    if (profileData) {
+      // If profile exists, just update the fields
+      updatedData = {
+        fullName: name,
+        title: title,
+      };
+    } else {
+      // If profile does not exist, create it with all required fields
+      updatedData = {
+        id: profileId,
+        fullName: name,
+        title: title,
+        bio: 'Default bio.', // Provide default value
+        location: 'Default location.', // Provide default value
+        email: user.email || 'no-email@example.com', // Provide default value
+      };
+    }
     
     setDocumentNonBlocking(profileRef, updatedData, { merge: true });
 
