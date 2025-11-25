@@ -1,13 +1,22 @@
 diff --git a/node_modules/react-quill/lib/index.js b/node_modules/react-quill/lib/index.js
-index 2a8997c..bced5a4 100644
+index 2338b55..0929255 100644
 --- a/node_modules/react-quill/lib/index.js
 +++ b/node_modules/react-quill/lib/index.js
-@@ -1023,7 +1023,7 @@
- 		// performance.
- 		if (this.lastDeltaChangeSet && this.lastDeltaChangeSet.source === 'user') {
- 			this.lastDeltaChangeSet = null;
--			var el = ReactDOM.findDOMNode(this.getEditor());
-+			var el = this.getEditor().getEditorContents();
- 			var editor = this.getEditor();
- 			this.setEditorSelection(editor, editor.getSelection());
- 		}
+@@ -520,7 +520,7 @@
+ 	},
+ 
+ 	getEditor: function getEditor() {
+-		return this.quill;
++		return this.quill
+ 	},
+ 
+ 	getEditingArea: function getEditingArea() {
+@@ -528,7 +528,7 @@
+ 	},
+ 
+ 	getEditingAreaRenderedNode: function getEditingAreaRenderedNode() {
+-		return this.editingArea;
++		return this.editingArea.current
+ 	},
+ 
+ 	focus: function focus() {
