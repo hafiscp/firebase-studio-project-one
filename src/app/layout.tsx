@@ -1,4 +1,6 @@
 
+'use client';
+
 import type { Metadata } from 'next';
 import { cn } from '@/lib/utils';
 import './globals.css';
@@ -7,17 +9,18 @@ import { ModeToggle } from '@/components/mode-toggle';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { BackButton } from '@/components/back-button';
+import { usePathname } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'ProfileGrid',
-  description: 'A modern, single-page portfolio.',
-};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -27,6 +30,8 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
           rel="stylesheet"
         />
+        <title>ProfileGrid</title>
+        <meta name="description" content="A modern, single-page portfolio." />
       </head>
       <body className={cn('font-body antialiased')}>
         <ThemeProvider
@@ -37,6 +42,11 @@ export default function RootLayout({
         >
           <FirebaseClientProvider>
             <div className="relative min-h-screen">
+              {!isHomePage && (
+                <div className="absolute top-4 left-4 z-50">
+                  <BackButton />
+                </div>
+              )}
               <div className="absolute top-4 right-4 z-50">
                 <ModeToggle />
               </div>
