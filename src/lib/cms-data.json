@@ -1,0 +1,37 @@
+{
+  "profile": {
+    "name": "Alex Doe",
+    "title": "Full-Stack Developer & UI/UX Designer",
+    "bio": "Crafting beautiful and functional web experiences. Passionate about clean code, user-centric design, and the future of the web. I turn ideas into reality with a focus on performance and aesthetics."
+  },
+  "keyMetrics": [
+    { "label": "Years Experience", "value": "5+" },
+    { "label": "Projects Completed", "value": "42" },
+    { "label": "Lines of Code", "value": "2M+" }
+  ],
+  "navigationLinks": [
+    { "label": "My Story", "href": "#", "icon": "BookUser" },
+    { "label": "Projects", "href": "#", "icon": "Lightbulb" },
+    { "label": "Community", "href": "#", "icon": "Users" }
+  ],
+  "techStack": [
+    { "name": "React" },
+    { "name": "Next.js" },
+    { "name": "TypeScript" },
+    { "name": "Tailwind CSS" },
+    { "name": "Node.js" },
+    { "name": "Firebase" },
+    { "name": "Vite" },
+    { "name": "Zod" }
+  ],
+  "contact": {
+    "title": "Let's Connect",
+    "description": "Have a project in mind or just want to say hi? Feel free to reach out.",
+    "email": "hello@alexdoe.com",
+    "socials": [
+      { "name": "GitHub", "url": "#", "icon": "Github" },
+      { "name": "LinkedIn", "url": "#", "icon": "Linkedin" },
+      { "name": "Twitter", "url": "#", "icon": "Twitter" }
+    ]
+  }
+}
