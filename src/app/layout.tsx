@@ -11,6 +11,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { BackButton } from '@/components/back-button';
 import { usePathname } from 'next/navigation';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 
 
 export default function RootLayout({
@@ -36,15 +37,16 @@ export default function RootLayout({
       <body className={cn('font-body antialiased')}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
           <FirebaseClientProvider>
             <div className="relative min-h-screen">
               {!isHomePage && (
-                <div className="absolute top-4 left-4 z-50">
+                <div className="absolute top-4 left-4 z-50 flex items-center gap-4">
                   <BackButton />
+                  <Breadcrumbs />
                 </div>
               )}
               <div className="absolute top-4 right-4 z-50">
