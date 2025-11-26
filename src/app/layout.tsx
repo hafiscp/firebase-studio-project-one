@@ -50,7 +50,7 @@ export default function RootLayout({
           <FirebaseClientProvider>
             <div className="relative min-h-screen">
               {mounted && !isHomePage && (
-                <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4">
+                <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 bg-background/80 backdrop-blur-sm">
                     <div className="flex items-center gap-4">
                         <BackButton />
                         <Breadcrumbs />
