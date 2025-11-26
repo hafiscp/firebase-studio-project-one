@@ -12,6 +12,7 @@ import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { BackButton } from '@/components/back-button';
 import { usePathname } from 'next/navigation';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { useState, useEffect } from 'react';
 
 
 export default function RootLayout({
@@ -21,6 +22,11 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -43,7 +49,7 @@ export default function RootLayout({
         >
           <FirebaseClientProvider>
             <div className="relative min-h-screen">
-               {!isHomePage && (
+              {mounted && !isHomePage && (
                 <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4">
                     <div className="flex items-center gap-4">
                         <BackButton />
@@ -52,12 +58,12 @@ export default function RootLayout({
                     <ModeToggle />
                 </header>
               )}
-               {isHomePage && (
+               {mounted && isHomePage && (
                  <div className="absolute top-4 right-4 z-50">
                     <ModeToggle />
                  </div>
                )}
-              <div className={cn(!isHomePage && "pt-16")}>
+              <div className={cn(mounted && !isHomePage && "pt-16")}>
                 {children}
               </div>
             </div>
