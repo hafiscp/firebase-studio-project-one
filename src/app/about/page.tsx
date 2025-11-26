@@ -21,7 +21,7 @@ export default function AboutPage() {
   const { data: profile, isLoading } = useDoc<Profile>(profileRef);
 
   return (
-    <main className="min-h-screen p-4 sm:p-6 lg:p-8 pt-24 md:pt-32">
+    <main className="min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-screen-2xl">
         <Card>
           <CardHeader>
