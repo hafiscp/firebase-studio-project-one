@@ -13,15 +13,6 @@ import { ArrowUpRight, Loader2 } from "lucide-react";
 // This should be the UID of the admin user who manages the content.
 const ADMIN_USER_ID = 'R24RFjVJTyd3R5aHbZOJweN62uw1';
 
-const truncateWords = (text: string, wordLimit: number) => {
-  if (!text) return '';
-  const words = text.split(' ');
-  if (words.length <= wordLimit) {
-    return text;
-  }
-  return words.slice(0, wordLimit).join(' ') + '...';
-};
-
 export default function ContributionsPage() {
   const { firestore } = useFirebase();
 
@@ -57,11 +48,8 @@ export default function ContributionsPage() {
                       <div className="flex-1">
                         <h3 className="font-medium text-lg">{item.heading}</h3>
                         {item.date && (
-                            <p className="text-sm text-muted-foreground mt-1">{item.date}</p>
+                            <p className="text-sm text-muted-foreground mt-1">{new Date(item.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</p>
                         )}
-                        <p className="text-muted-foreground mt-2 text-sm">
-                            {truncateWords(item.content, 20)}
-                        </p>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-6">
