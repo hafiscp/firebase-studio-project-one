@@ -47,22 +47,29 @@ export default function ContributionsPage() {
                     <AccordionTrigger className="p-6 text-left hover:no-underline">
                       <div className="flex-1">
                         <h3 className="font-medium text-lg">{item.heading}</h3>
-                        {item.date && (
-                            <p className="text-sm text-muted-foreground mt-1">{new Date(item.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</p>
-                        )}
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                            {item.date && (
+                                <p>{new Date(item.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</p>
+                            )}
+                            {item.date && item.proofOfWorkUrl && <span>|</span>}
+                            {item.proofOfWorkUrl && (
+                                <Link 
+                                    href={item.proofOfWorkUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline flex items-center gap-1"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    View Proof <ArrowUpRight className="h-3 w-3" />
+                                </Link>
+                            )}
+                        </div>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pb-6">
                       <div className="prose dark:prose-invert max-w-none text-muted-foreground whitespace-pre-wrap pt-2">
                         {item.content}
                       </div>
-                      {item.proofOfWorkUrl && (
-                        <Button asChild variant="link" className="px-0 mt-4">
-                          <Link href={item.proofOfWorkUrl} target="_blank" rel="noopener noreferrer">
-                            View Proof <ArrowUpRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-                      )}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
