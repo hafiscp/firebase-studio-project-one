@@ -13,6 +13,7 @@ import { BackButton } from '@/components/back-button';
 import { usePathname } from 'next/navigation';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { useState, useEffect } from 'react';
+import { Footer } from '@/components/footer';
 
 
 export default function RootLayout({
@@ -22,6 +23,7 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
+  const isAdminPage = pathname.startsWith('/admin');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -48,9 +50,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <FirebaseClientProvider>
-            <div className="relative min-h-screen">
+            <div className="relative min-h-screen flex flex-col">
               {mounted && !isHomePage && (
-                <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 bg-background/80 backdrop-blur-sm">
+                <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 bg-background/80 backdrop-blur-sm border-b">
                     <div className="flex items-center gap-4">
                         <BackButton />
                         <Breadcrumbs />
@@ -63,9 +65,10 @@ export default function RootLayout({
                     <ModeToggle />
                  </div>
                )}
-              <div className={cn(mounted && !isHomePage ? "pt-16" : "")}>
+              <div className={cn("flex-grow", mounted && !isHomePage ? "pt-16" : "")}>
                 {children}
               </div>
+              {mounted && !isHomePage && !isAdminPage && <Footer />}
             </div>
             <Toaster />
             <FirebaseErrorListener />
