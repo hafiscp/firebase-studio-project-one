@@ -20,7 +20,7 @@ export function Footer() {
             href="https://firebase.google.com/studio"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-foreground hover:text-primary transition-colors"
+            className="hover:underline"
           >
             Google Firebase Studio
           </Link>
@@ -29,7 +29,7 @@ export function Footer() {
             href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-foreground hover:text-primary transition-colors"
+            className="hover:underline"
           >
             GitHub
           </Link>
@@ -38,7 +38,7 @@ export function Footer() {
             href="https://vercel.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-foreground hover:text-primary transition-colors"
+            className="hover:underline"
           >
             Vercel
           </Link>
