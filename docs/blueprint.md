@@ -1,4 +1,4 @@
-# **App Name**: ProfileGrid
+# **App Name**: Hafis CP | PM
 
 ## Core Features:
 

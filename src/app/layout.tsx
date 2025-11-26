@@ -31,8 +31,8 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
           rel="stylesheet"
         />
-        <title>ProfileGrid</title>
-        <meta name="description" content="A modern, single-page portfolio." />
+        <title>Hafis CP | PM</title>
+        <meta name="description" content="Hafis CP's personal portfolio website." />
       </head>
       <body className={cn('font-body antialiased')}>
         <ThemeProvider
