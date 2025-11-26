@@ -57,7 +57,7 @@ export default function ContributionsPage() {
                                     href={item.proofOfWorkUrl} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="text-primary hover:underline flex items-center gap-1"
+                                    className="text-blue-500 hover:underline flex items-center gap-1"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     View Proof <ArrowUpRight className="h-3 w-3" />
