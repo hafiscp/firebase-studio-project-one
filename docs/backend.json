@@ -294,6 +294,11 @@
         "order": {
           "type": "number",
           "description": "The order in which the involvement should appear."
+        },
+        "url": {
+          "type": "string",
+          "description": "URL to the community's website or relevant page.",
+          "format": "uri"
         }
       },
       "required": [

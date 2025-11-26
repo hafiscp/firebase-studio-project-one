@@ -391,6 +391,7 @@ function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItem
   const [startDate, setStartDate] = useState(item.startDate ?? '');
   const [endDate, setEndDate] = useState(item.endDate ?? '');
   const [isCurrent, setIsCurrent] = useState(item.isCurrent ?? false);
+  const [url, setUrl] = useState(item.url ?? '');
 
   useEffect(() => {
     setRole(item.role ?? '');
@@ -399,6 +400,7 @@ function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItem
     setStartDate(item.startDate ?? '');
     setEndDate(item.endDate ?? '');
     setIsCurrent(item.isCurrent ?? false);
+    setUrl(item.url ?? '');
   }, [item]);
 
   const style = {
@@ -414,6 +416,7 @@ function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItem
       startDate,
       isCurrent,
       endDate: isCurrent ? null : endDate,
+      url,
     };
     onSave(item.id, dataToSave);
   };
@@ -472,6 +475,14 @@ function SortableCommunityItem({ item, onSave, onDelete }: SortableCommunityItem
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Website URL</Label>
+              <Input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com/community"
               />
             </div>
             <div className="flex gap-2">
@@ -537,6 +548,7 @@ function CommunityForm() {
       isCurrent: true,
       description: '',
       order: newOrder,
+      url: ''
     };
     addDocumentNonBlocking(communityCollectionRef, newItem);
   };

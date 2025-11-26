@@ -64,4 +64,5 @@ export type CommunityInvolvement = {
     endDate: string | null;
     isCurrent: boolean;
     order: number;
+    url?: string;
 };

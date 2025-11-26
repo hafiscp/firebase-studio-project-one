@@ -5,6 +5,8 @@ import type { CommunityInvolvement } from '@/lib/entities';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { format } from 'date-fns';
+import Link from 'next/link';
+import { ArrowUpRight } from 'lucide-react';
 
 type CommunityTimelineProps = {
   items: CommunityInvolvement[];
@@ -34,7 +36,22 @@ export function CommunityTimeline({ items }: CommunityTimelineProps) {
                     <CardTitle>{item.communityName}</CardTitle>
                     <Badge variant="outline">{formatDateRange(item.startDate, item.endDate, item.isCurrent)}</Badge>
                 </div>
-                <CardDescription>{item.role}</CardDescription>
+                <CardDescription className="flex items-center gap-2">
+                  <span>{item.role}</span>
+                  {item.url && (
+                    <>
+                      <span>|</span>
+                      <Link
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline flex items-center gap-1 text-sm"
+                      >
+                        Website <ArrowUpRight className="h-3 w-3" />
+                      </Link>
+                    </>
+                  )}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">{item.description}</p>
