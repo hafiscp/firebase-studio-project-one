@@ -6,10 +6,21 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Contribution } from '@/lib/entities';
-import { Loader2 } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { ArrowUpRight, Loader2 } from "lucide-react";
 
 // This should be the UID of the admin user who manages the content.
 const ADMIN_USER_ID = 'R24RFjVJTyd3R5aHbZOJweN62uw1';
+
+const truncateWords = (text: string, wordLimit: number) => {
+  if (!text) return '';
+  const words = text.split(' ');
+  if (words.length <= wordLimit) {
+    return text;
+  }
+  return words.slice(0, wordLimit).join(' ') + '...';
+};
 
 export default function ContributionsPage() {
   const { firestore } = useFirebase();
@@ -41,17 +52,29 @@ export default function ContributionsPage() {
             ) : contributions && contributions.length > 0 ? (
               <Accordion type="single" collapsible className="w-full space-y-4">
                 {contributions.map((item) => (
-                  <AccordionItem key={item.id} value={item.id} className="bg-background/50 rounded-lg border px-4">
-                    <AccordionTrigger>
-                      <div className="flex justify-between items-center w-full pr-4">
-                        <span className="font-medium text-lg">{item.heading}</span>
-                        <span className="text-sm text-muted-foreground">{item.date}</span>
+                  <AccordionItem key={item.id} value={item.id} className="bg-background/50 rounded-lg border">
+                    <AccordionTrigger className="p-6 text-left hover:no-underline">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-lg">{item.heading}</h3>
+                        {item.date && (
+                            <p className="text-sm text-muted-foreground mt-1">{item.date}</p>
+                        )}
+                        <p className="text-muted-foreground mt-2 text-sm">
+                            {truncateWords(item.content, 20)}
+                        </p>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent>
+                    <AccordionContent className="px-6 pb-6">
                       <div className="prose dark:prose-invert max-w-none text-muted-foreground whitespace-pre-wrap pt-2">
                         {item.content}
                       </div>
+                      {item.proofOfWorkUrl && (
+                        <Button asChild variant="link" className="px-0 mt-4">
+                          <Link href={item.proofOfWorkUrl} target="_blank" rel="noopener noreferrer">
+                            View Proof <ArrowUpRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      )}
                     </AccordionContent>
                   </AccordionItem>
                 ))}

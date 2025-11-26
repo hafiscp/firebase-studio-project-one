@@ -235,6 +235,11 @@
         "order": {
           "type": "number",
           "description": "The order in which the contribution should appear."
+        },
+        "proofOfWorkUrl": {
+          "type": "string",
+          "description": "A URL linking to a proof of work for the contribution.",
+          "format": "uri"
         }
       },
       "required": [

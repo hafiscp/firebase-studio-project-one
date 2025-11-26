@@ -19,7 +19,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, PlusCircle, Save, Github, Linkedin, Twitter, LogOut } from 'lucide-react';
+import { GripVertical, Trash2, PlusCircle, Save, Github, Linkedin, Twitter, LogOut, Briefcase } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -175,7 +175,7 @@ function AboutForm() {
 
 type SortableContributionItemProps = {
   item: Contribution;
-  onSave: (id: string, data: Pick<Contribution, 'heading' | 'date' | 'content'>) => void;
+  onSave: (id: string, data: Partial<Contribution>) => void;
   onDelete: (id: string) => void;
 };
 
@@ -184,11 +184,14 @@ function SortableContributionItem({ item, onSave, onDelete }: SortableContributi
   const [heading, setHeading] = useState(item.heading);
   const [date, setDate] = useState(item.date);
   const [content, setContent] = useState(item.content);
+  const [proofOfWorkUrl, setProofOfWorkUrl] = useState(item.proofOfWorkUrl ?? '');
+
 
   useEffect(() => {
     setHeading(item.heading);
     setDate(item.date);
     setContent(item.content);
+    setProofOfWorkUrl(item.proofOfWorkUrl ?? '');
   }, [item]);
 
   const style = {
@@ -197,7 +200,7 @@ function SortableContributionItem({ item, onSave, onDelete }: SortableContributi
   };
 
   const handleSave = () => {
-    onSave(item.id, { heading, date, content });
+    onSave(item.id, { heading, date, content, proofOfWorkUrl });
   };
 
   return (
@@ -230,6 +233,14 @@ function SortableContributionItem({ item, onSave, onDelete }: SortableContributi
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={5}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Proof of Work URL</Label>
+              <Input
+                value={proofOfWorkUrl}
+                onChange={(e) => setProofOfWorkUrl(e.target.value)}
+                placeholder="https://example.com/proof"
               />
             </div>
              <div className="flex gap-2">
@@ -292,11 +303,12 @@ function ContributionsForm() {
             date: new Date().toISOString().split('T')[0],
             content: '',
             order: newOrder,
+            proofOfWorkUrl: ''
         };
         addDocumentNonBlocking(contributionsCollectionRef, newContribution);
     };
     
-    const handleSaveContribution = (id: string, data: Pick<Contribution, 'heading' | 'date' | 'content'>) => {
+    const handleSaveContribution = (id: string, data: Partial<Contribution>) => {
       if (!contributionsCollectionRef) return;
       const docRef = doc(contributionsCollectionRef, id);
       setDocumentNonBlocking(docRef, data, { merge: true });

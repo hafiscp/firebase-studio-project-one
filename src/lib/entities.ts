@@ -51,6 +51,7 @@ export type Contribution = {
     date: string;
     content: string;
     order: number;
+    proofOfWorkUrl?: string;
 };
 
 export type CommunityInvolvement = {
