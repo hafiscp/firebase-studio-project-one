@@ -43,16 +43,23 @@ export default function RootLayout({
         >
           <FirebaseClientProvider>
             <div className="relative min-h-screen">
-              {!isHomePage && (
-                <div className="absolute top-4 left-4 z-50 flex items-center gap-4">
-                  <BackButton />
-                  <Breadcrumbs />
-                </div>
+               {!isHomePage && (
+                <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4">
+                    <div className="flex items-center gap-4">
+                        <BackButton />
+                        <Breadcrumbs />
+                    </div>
+                    <ModeToggle />
+                </header>
               )}
-              <div className="absolute top-4 right-4 z-50">
-                <ModeToggle />
+               {isHomePage && (
+                 <div className="absolute top-4 right-4 z-50">
+                    <ModeToggle />
+                 </div>
+               )}
+              <div className={cn(!isHomePage && "pt-16")}>
+                {children}
               </div>
-              {children}
             </div>
             <Toaster />
             <FirebaseErrorListener />
