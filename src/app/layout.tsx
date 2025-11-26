@@ -63,7 +63,7 @@ export default function RootLayout({
                     <ModeToggle />
                  </div>
                )}
-              <div className={cn(mounted && !isHomePage && "pt-16")}>
+              <div className={cn(mounted && !isHomePage ? "pt-16" : "")}>
                 {children}
               </div>
             </div>
