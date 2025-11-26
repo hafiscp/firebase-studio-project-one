@@ -11,30 +11,30 @@ const tasks = [
   {
     id: "task-1",
     title: "Task 1",
-    subHeading: "Lorem ipsum dolor sit amet",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    submissionUrl: "#"
+    subHeading: "Use Vibecoding or Gemini to make a landing page",
+    description: "Use vibecoding or Gemini 3 to make a landing page about the things mentioned.",
+    submissionUrl: "https://hafiscp-portfolio-pm.vercel.app/"
   },
   {
     id: "task-2",
     title: "Task 2",
-    subHeading: "Consectetur adipiscing elit",
-    description: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    submissionUrl: "#"
+    subHeading: "Make a CMS with database and front end",
+    description: "Make a CMS with database and front end to make changes to this landing page.",
+    submissionUrl: "https://hafiscp-portfolio-pm.vercel.app/admin"
   },
   {
     id: "task-3",
     title: "Task 3",
-    subHeading: "Sed do eiusmod tempor incididunt",
-    description: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-    submissionUrl: "#"
+    subHeading: "Pitching the community offering",
+    description: "If you were pitching the community offering, how would you design the slides on Figma.",
+    submissionUrl: "https://www.figma.com/deck/A5bdaSaPEpLV01hHbnHCxM/FOF-Kozhikode-Community-Offerings?node-id=1-143&t=ehK9gGFabbIDgrQ4-1"
   },
   {
     id: "task-4",
     title: "Task 4",
-    subHeading: "Ut enim ad minim veniam",
-    description: "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.",
-    submissionUrl: "#"
+    subHeading: "Figuring out PMF of a product",
+    description: "If you’re tasked to figure out PMF of a product how would you think.",
+    submissionUrl: "https://www.notion.so/hafiscp/Product-Market-Fit-My-way-of-Approach-Hafis-CP-2b79d9bc720280cab39ef70255d86dc8?source=copy_link"
   }
 ];
 
