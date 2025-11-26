@@ -43,7 +43,7 @@ export default function ContributionsPage() {
             ) : contributions && contributions.length > 0 ? (
               <Accordion type="single" collapsible className="w-full space-y-4">
                 {contributions.map((item) => (
-                  <AccordionItem key={item.id} value={item.id} className="bg-background/50 rounded-lg border">
+                  <AccordionItem key={item.id} value={item.id} className="bg-muted/50 rounded-lg border">
                     <AccordionTrigger className="p-6 text-left hover:no-underline">
                       <div className="flex-1">
                         <h3 className="font-medium text-lg">{item.heading}</h3>
